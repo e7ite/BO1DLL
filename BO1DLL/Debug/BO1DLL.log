@@ -1,0 +1,19 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\documents\visual studio 2017\projects\bo1dll\debug\bo1dll.dll' is denied.
+  
+  
+  Library BO1DLL.dll Loaded 11:15:53
+  
+  
+cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+  aimbot.cpp
+  detours.cpp
+  dllmain.cpp
+  esp.cpp
+  structures.cpp
+  Generating Code...
+  BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
+  
+  
+  Library BO1DLL.dll Loaded 11:15:59
+  
+  

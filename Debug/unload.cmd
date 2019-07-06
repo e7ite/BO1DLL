@@ -1,0 +1,1 @@
+DevInject.exe "BlackOpsMP" "unload" "BO1DLL.dll"
