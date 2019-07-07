@@ -9,24 +9,23 @@ float Distance3D(vec3_t c1, vec3_t c2)
 	float dy = c2.y - c1.y;
 	float dz = c2.z - c1.z;
 
-	return sqrtf(dx * dx + dy * dy + dz * dz);
+	return sqrtf((float)((dx * dx) + (dy * dy) + (dz * dz)));
 }
 
 bool ExecuteAimbot()
 {
 	if (InGame())
 	{
-		centity_s *target = GetAimbotTarget();
-		if (target)
+		int target = GetAimbotTarget();
+		if (target != -1)
 		{
-			AimTarget_GetTagPos(target, "j_head", Aimbot::targetAngles);
+			AimTarget_GetTagPos(CG_GetEntity(0, target), "j_head", Aimbot::targetAngles);
 
 			vectoangles(Aimbot::targetAngles - cgameGlob->refdef.vieworg,
 				Aimbot::targetAngles);
-
 			Aimbot::targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
 
-			SetAngles(Aimbot::targetAngles);
+			//SetAngles(Aimbot::targetAngles);
 
 			return true;
 		}
@@ -39,32 +38,35 @@ bool ValidTarget(centity_s *cent)
 {
 	return cent->nextState.number != cgameGlob->clientNum
 		&& cent->nextState.eType == 1
-		&& !(cent->lerp.eFlags & 0x20) && !(cent->lerp.eFlags & 0x4000);
+		&& cent->alive & 2;
 }
 
-centity_s* GetAimbotTarget()
+int GetAimbotTarget()
 {
-	centity_s *cent = nullptr;
+	int target = -1;
 	float vec[3];
 	float closestDistance = static_cast<float>(INT_MAX);
 
 	for (__int32 i = 0; i < 1024; ++i)
 	{
-		centity_s *tmpcent = CG_GetEntity(0, i);
-		if (ValidTarget(tmpcent)
-			&& AimTarget_GetTagPos(tmpcent, "j_head", vec))
+		centity_s *cent = CG_GetEntity(0, i);
+		if (ValidTarget(cent)
+			&& cgameGlob->clients[i].team 
+				!= cgameGlob->clients[cgameGlob->clientNum].team
+			&& AimTarget_GetTagPos(cent, "j_head", vec)
+			&& AimTarget_IsTargetVisible(cent, "j_head"))
 		{
 			float distance = Distance3D(
 				cgameGlob->predictedPlayerState.origin, vec);
 			if (distance < closestDistance)
 			{
-				cent = tmpcent;
+				target = i;
 				closestDistance = distance;
 			}
 		}
 	}
 
-	return cent;
+	return target;
 }
 
 void SetAngles(const vec3_t& angles)
@@ -72,6 +74,65 @@ void SetAngles(const vec3_t& angles)
 	clientActive->viewangles[0] = angles.pitch;
 	clientActive->viewangles[1] = angles.yaw;
 	clientActive->viewangles[2] = angles.roll;
+}
+
+void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
+	float oldForwardmove, float oldRightmove)
+{
+	float deltaView = currentAngle - oldAngle, f1, f2;
+
+	if (oldAngle < 0.f)
+		f1 = 360.0f + oldAngle;
+	else
+		f1 = oldAngle;
+
+	if (currentAngle < 0.0f)
+		f2 = 360.0f + currentAngle;
+	else
+		f2 = currentAngle;
+
+	if (f2 < f1)
+		deltaView = abs(f2 - f1);
+	else
+		deltaView = 360.0f - abs(f1 - f2);
+	deltaView = 360.0f - deltaView;
+
+	cmd->forwardmove = static_cast<char>(
+		cosf(DegreesToRadians(deltaView)) * oldForwardmove
+		+ cosf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
+		);
+	cmd->rightmove = (
+		sinf(DegreesToRadians(deltaView)) * oldForwardmove
+		+ sinf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
+		);
+}
+
+float DegreesToRadians(float deg)
+{
+	return deg * (pi() / 180.f);
+}
+
+float pi()
+{
+	float funcRet;
+
+	__asm
+	{
+		fldpi
+		fstp			funcRet
+	}
+
+	return funcRet;
+}
+
+int AngleToShort(float x)
+{
+	return ((int)(x * 65536 / 360) & 65535);
+}
+
+float ShortToAngle(int x)
+{
+	return (x * (360.0f / 65536));
 }
 
 bool InGame()

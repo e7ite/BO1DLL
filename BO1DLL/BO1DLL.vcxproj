@@ -164,12 +164,14 @@ call "load.cmd"</Command>
     <ClCompile Include="detours.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="esp.cpp" />
+    <ClCompile Include="menu.cpp" />
     <ClCompile Include="structures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aimbot.h" />
     <ClInclude Include="detours.h" />
     <ClInclude Include="esp.h" />
+    <ClInclude Include="menu.h" />
     <ClInclude Include="structures.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -160,7 +160,8 @@ struct centity_s
 	LerpEntityState lerp;					//0x060
 	char pad00[0x180];						//0x068
 	entityState_s nextState;				//0x1E8
-	char pad01[0x60];						//0x2C8
+	char pad01[0x5C];						//0x2C8
+	int alive;								//0x324
 }; //Size = 0x328
 
 struct refdef_s
@@ -180,23 +181,52 @@ struct refdef_s
 	int time;								//0x0060
 }; //Size = 0x64
 
+struct score_s
+{
+	int ping;								//0x00
+	int status_icon;						//0x04
+	int place;								//0x08
+	int score;								//0x0C
+	int kills;								//0x10
+	int assists;							//0x14
+	int deaths;								//0x18
+	int scoreboardColumns[4];				//0x1C
+}; //Size = 0x2C
+
 struct clientInfo_t
 {
-
+	int infoValid;							//0x000
+	int nextValid;							//0x004
+	int clientNum;							//0x008
+	char name[0x20];						//0x010
+	int team;								//0x030
+	int oldteam;							//0x034
+	int ffateam;							//0x038
+	int rank;								//0x03C
+	int prestige;							//0x040
+	unsigned int perks[2];					//0x044
+	char pad00[0x8];						//0x04C
+	unsigned __int64 xuid;					//0x054
+	char clanAbbrev[8];						//0x05C
+	score_s score;							//0x064
+	char pad01[0x8];						//0x090
+	struct Material *hRankIcon;				//0x098
+	char pad02[0x8];						//0x09C
+	char model[0x40];						//0x0A4
+	char attachModelNames[6][0x40];			//0x0E4
+	char attachTagNames[6][0x40];			//0x264
+	char pad03[0x6C];						//0x3E4
+	float playerAngles[3];					//0x450
+	char pad04[0x178];						//0x45C
 }; //Size = 0x5D0
-
-struct snapshot_s
-{
-
-};
 
 struct cg_s
 {
 	int clientNum;							//0x000000
 	int localClientNum;						//0x000004
 	char pad00[0x20];						//0x000008
-	snapshot_s *snap;						//0x000028
-	snapshot_s *nextSnap;					//0x00002C
+	struct snapshot_s *snap;				//0x000028
+	struct snapshot_s *nextSnap;			//0x00002C
 	char pad01[0x40658];					//0x000030
 	int time;								//0x040688
 	int oldTime;							//0x04068C
@@ -208,11 +238,16 @@ struct cg_s
 	refdef_s refdef;						//0x043100
 	char pad03[0x1BCEC];					//0x043164
 	int weaponSelect;						//0x05EE50
-	char pad04[0x284];						//0x05EE54
+	char pad04[0x140];						//0x05EE54	
+	float gunPitch;							//0x05EF94
+	float gunYaw;							//0x05EF98
+	char pad05[0xB0];						//0x05EF9C
+	float zoomSensitivity;					//0x05F04C
+	char pad06[0x88];						//0x05F050
 	int	inKillCam;							//0x05F0D8
-	char pad05[0x15C];						//0x05F0DC
+	char pad07[0x15C];						//0x05F0DC
 	clientInfo_t clients[0x12];				//0x05F238
-	char pad06[0xA038];						//0x065AD8
+	char pad08[0xA038];						//0x065AD8
 	float aimSpreadScale;					//0x06FB10
 }; 
 
@@ -241,31 +276,142 @@ struct usercmd_s
 	int button_bits[2];						//0x04
 	int angles[3];							//0x0C
 	unsigned short weapon;					//0x18
-	unsigned short offHandIndex;			//0x20
-	unsigned short lastWeaponAltModeSwitch; //0x22
-	char forwardmove;						//0x23
-	char rightmove;							//0x24
-	char upmove;							//0x25
-	char pitchmove;							//0x26
-	char yawmove;							//0x27
-	float meleeChargeYaw;					//0x28
-	char meleeChargeDist;					//0x2C
-	float rollmove;							//0x2D
-	char selectedLocation[2];				//0x31
-	char selectedYaw;						//0x33
+	unsigned short offHandIndex;			//0x1A
+	unsigned short lastWeaponAltModeSwitch; //0x1C
+	char forwardmove;						//0x1E
+	char rightmove;							//0x1F
+	char upmove;							//0x20
+	char pitchmove;							//0x21
+	char yawmove;							//0x22
+	float meleeChargeYaw;					//0x23
+	char meleeChargeDist;					//0x27
+	float rollmove;							//0x28
+	char selectedLocation[2];				//0x2C
+	char selectedYaw;						//0x2E
+	char pad00[0x5];						//0x2F
 }; //Size = 0x34
 
 struct clientActive_t
 {
-	bool usingAds;							//0x000000
-	char pad00[0x3];						//0x000001
-	int timeoutcount;						//0x000004
-	clSnapshot_t snap;						//0x000008
-	char pad01[0x124];						//0x002728
-	float viewangles[3];					//0x00284C
-	char pad02[0xEADB90];					//0x002858
-	usercmd_s cmds[0x80];					//0xEB03E8
-	int cmdNumber;							//0xEB1DE8
+	bool usingAds;							//0x00000
+	char pad00[0x3];						//0x00001
+	int timeoutcount;						//0x00004
+	clSnapshot_t snap;						//0x00008
+	char pad01[0x124];						//0x02728
+	float viewangles[3];					//0x0284C
+	char pad02[0x40010];					//0x02858
+	usercmd_s cmds[0x80];					//0x42868
+	int cmdNumber;							//0x44268
+}; 
+
+struct WeaponDef
+{
+	const char *szOverlayName;				//0x000
+	struct XModel **gunXModel;				//0x004
+	struct XModel *handXModel;				//0x008
+	const char *szModeName;					//0x00C
+	unsigned short *notetrackSoundMapKeys;	//0x010
+	unsigned short *notetrackSoundMapValues;//0x014
+	int playerAnimType;						//0x018
+	int weapType;							//0x01C
+	int weapClass;							//0x020
+	int penetrateType;						//0x024
+	int impactType;							//0x028
+	int inventoryType;						//0x02C
+	char pad00[0x2F0];						//0x030
+	struct Material *hudIcon;				//0x320
+	int hudIconRatio;						//0x324
+	struct Material *indicatorIcon;			//0x328
+	int indicatorIconRatio;					//0x32C
+	struct Material *ammoCounterIcon;		//0x330
+	int ammoCounterIconRation;				//0x334
+	int ammoCounterClip;					//0x338
+	int iStartAmmo;							//0x33C
+	int iHeatIndex;							//0x340
+	int iMaxAmmo;							//0x344
+	int shotCount;							//0x348
+	char pad01[0x180];						//0x34C
+	float fHipSpreadDuckedMin;				//0x4CC
+	float fHipSpreadStandMin;				//0x4D0
+	float fHipSpreadProneMin;				//0x4D4
+	float hipSpreadDuckedMax;				//0x4D8
+	float hipSpreadStandMax;				//0x4DC
+	float hipSpreadProneMax;				//0x4E0
+	char pad02[0x68];						//0x4E4
+	bool sharedAmmo;						//0x54C
+	bool bRifleBullet;						//0x54D
+	bool armorPiercing;						//0x54E
+	bool bBoltAction;						//0x54F
+	char pad03[0x108];						//0x550
+	float fAdsViewKickYawMin;				//0x658
+	float fAdsViewKickYawMax;				//0x65C
+	float fAdsViewScatterMin;				//0x6C0
+	float fAdsViewScatterMax;				//0x6C4
+	float fAdsSpread;						//0x6C8
+	char pad04[0x88];						//0x6CC
+	float aiSpread;							//0x754
+	float playerSpread;						//0x758
+	char pad04[0x44];						//0x75C
+	int minDamage;							//0x7A0
+	int minPlayerDamage;					//0x7A4
+	float fMaxDamageRange;					//0x7A8
+	float fMinDamageRange;					//0x7AC
+};
+
+struct WeaponVariantDef
+{
+	const char *szInternalName;				//0x000
+	int iVariantCount;						//0x004
+	WeaponDef *weapDef;						//0x008
+	const char *szDisplayName;				//0x00C
+	const char **szXAnims;					//0x010
+	const char *szAltWeaponName;			//0x014
+	unsigned __int16 *hideTags;				//0x018
+	unsigned int altWeaponIndex;			//0x01C
+	int iClipSize;							//0x020
+	int iReloadTime;						//0x024
+	int iReloadEmptyTime;					//0x028
+	int iReloadQuickTime;					//0x02C
+	int iReloadQuickEmptyTime;				//0x030
+	int iAdsTransInTime;					//0x034
+	int iAdsTransOutTime;					//0x038
+	int iAltRaiseTime;						//0x03C
+	const char *szAmmoName;					//0x040
+	int iAmmoIndex;							//0x044
+	const char *szClipName;					//0x048
+	int iClipIndex;							//0x04C
+	float fAimAssistRangeAds;				//0x050
+	float fAdsSwayHorizScale;				//0x054
+	float fAdsSwayVertScale;				//0x058
+	float fAdsViewKickCenterSpeed;			//0x05C
+	float fHipViewKickCenterSpeed;			//0x060
+	float fAdsZoomFov1;						//0x064
+	float fAdsZoomFov2;						//0x068
+	float fAdsZoomFov3;						//0x06C
+	float fAdsZoomInFrac;					//0x070
+	float fAdsZoomOutFrac;					//0x074
+	float fOverlayAlphaScale;				//0x078
+	float fOOPosAnimLength[2];				//0x07C
+	bool bSilenced;							//0x084
+	bool bDualMag;							//0x085
+	bool bFullMetalJacket;					//0x086
+	bool bHollowPoint;						//0x087
+	bool bRapidFire;						//0x088
+	char pad00[0x3];						//0x089
+	Material *overlayMaterial;				//0x08C
+	Material *overlayMaterialLowRes;		//0x090
+	Material *dpadIcon;						//0x094
+	int dpadIconRatio;						//0x098
+};
+
+struct rectDef_s
+{
+	float x;								//0x00
+	float y;								//0x04
+	float w;								//0x08
+	float h;								//0x0C
+	int horzAlign;							//0x10
+	int vertAlign;							//0x14
 };
 
 enum FuncAddresses : DWORD
@@ -283,6 +429,20 @@ enum FuncAddresses : DWORD
 	Com_GetClientDObj_a						= 0x6ACD60,
 	CG_DObjGetLocalTagMatrix_a				= 0x5D63B0,
 	vectoangles_a							= 0x4D5230,
+	R_AddCmdDrawText_a						= 0x6F9090,
+	R_TextWidth_a							= 0x6F7050,
+	R_TextHeight_a							= 0x6F7140,
+	UI_GetFontHandle_a						= 0x552F20,
+	UI_TextWidth_a							= 0x6847A0,
+	UI_TextHeight_a							= 0x4436E0,
+	AimTarget_IsTargetVisible_a				= 0x7AF2F0,
+	AimTarget_IsTargetValid_a				= 0x7AEF50,
+	BG_GetSpreadForWeapon_a					= 0x604A60,
+	BG_GetWeaponDef_a						= 0x516C40,
+	BG_GetWeaponVariantDef_a				= 0x40F2C0,
+	DrawSketchPicGun_a						= 0x7CE270,
+	CG_GetPlayerViewOrigin_a				= 0x679940,
+	CG_BulletEndpos_a						= 0x803020,
 };
 
 using QWORD = unsigned long long;
@@ -341,5 +501,28 @@ extern unsigned short(__cdecl *SL_FindString)(const char *str, int localClientNu
 extern int(__cdecl *CG_DObjGetLocalTagMatrix)(cpose_t *pose, struct DObj *obj,
 	int tagname, float *out);
 extern void(__cdecl *vectoangles)(const float *vec, float *angles);
+extern void(__cdecl *R_AddCmdDrawText)(const char *text, int maxChars,
+	Font_s *font, float x, float y, float xScale, float yScale, float rotation,
+	const float *color, int style);
+extern int(__cdecl *R_TextWidth)(const char *text, int maxChars, Font_s *font);
+extern int(__cdecl *R_TextHeight)(Font_s *font);
+extern Font_s*(__cdecl *UI_GetFontHandle)(ScreenPlacement *scrPlace, int maxChars,
+	float scale);
+extern int(__cdecl *UI_TextWidth)(const char *text, int maxChars, Font_s *font,
+	float scale);
+extern int(__cdecl *UI_TextHeight)(Font_s *font, float scale);
+extern void(__cdecl *BG_GetSpreadForWeapon)(playerState_s *ps, WeaponDef *weap,
+	float *minSpread, float *maxSpread);
+extern WeaponDef*(__cdecl *BG_GetWeaponDef)(int weaponIndex);
+extern WeaponVariantDef*(__cdecl *BG_GetWeaponVariantDef)(int weaponIndex);
+extern bool(__cdecl *CG_GetPlayerViewOrigin)(int localClientNum,
+	playerState_s *ps, float *origin);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
+bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
+bool AimTarget_IsTargetValid(centity_s *cent, cg_s *cgameGlob);
+void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+	const float *color, struct Material *material, int ratio);
+void CG_BulletEndpos(int randSeed, const float spread, const float *start,
+	float *end, float *dir, const float *forwardDir, const float *rightDir,
+	const float *upDir, const float maxRange);

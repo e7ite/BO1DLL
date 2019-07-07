@@ -2,6 +2,8 @@
 
 void(__cdecl *Menu_PaintAll)(int localClientNum, UiContext *dc)
 = (void(__cdecl*)(int, UiContext*))Menu_PaintAll_a;
+void(__cdecl *CL_CreateNewCommands)(int localClientNum)
+= (void(__cdecl*)(int))CL_CreateNewCommands_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -55,7 +57,25 @@ void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 {
 	Menu_PaintAll(localClientNum, dc);
-	
+
 	RenderESP();
-	ExecuteAimbot();
+}
+
+void CL_CreateNewCommandsDetour(int localClientNum)
+{
+	CL_CreateNewCommands(localClientNum);
+
+	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
+		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
+
+	ocmd->serverTime += 4;
+
+	if (ExecuteAimbot())
+	{
+		ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.x);
+		ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.y);
+
+		//ocmd->button_bits[0] |= 0x80000000;
+		//ccmd->button_bits[0] &= ~0x80000000;
+	}
 }

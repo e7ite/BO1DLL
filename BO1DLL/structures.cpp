@@ -51,6 +51,33 @@ int(__cdecl *CG_DObjGetLocalTagMatrix)(cpose_t *pose, DObj *obj,
 = (int(__cdecl*)(cpose_t*, DObj*, int, float*))CG_DObjGetLocalTagMatrix_a;
 void(__cdecl *vectoangles)(const float *vec, float *angles)
 = (void(__cdecl*)(const float*, float*))vectoangles_a;
+void(__cdecl *R_AddCmdDrawText)(const char *text, int maxChars,
+	Font_s *font, float x, float y, float xScale, float yScale, float rotation,
+	const float *color, int style)
+= (void(__cdecl*)(const char*, int, Font_s*, float, float, float, float, float,
+	const float*, int))R_AddCmdDrawText_a;	
+int(__cdecl *R_TextWidth)(const char *text, int maxChars, Font_s *font)
+= (int(__cdecl*)(const char*, int, Font_s*))R_TextWidth_a;
+int(__cdecl *R_TextHeight)(Font_s *font) = (int(__cdecl*)(Font_s*))R_TextHeight_a;
+Font_s*(__cdecl *UI_GetFontHandle)(ScreenPlacement *scrPlace, int fontEnum,
+	float scale)
+= (Font_s*(__cdecl*)(ScreenPlacement*, int, float))UI_GetFontHandle_a;
+int(__cdecl *UI_TextWidth)(const char *text, int maxChars, Font_s *font,
+	float scale)
+= (int(__cdecl*)(const char*, int, Font_s*, float))UI_TextWidth_a;
+int(__cdecl *UI_TextHeight)(Font_s *font, float scale)
+= (int(__cdecl*)(Font_s*, float))UI_TextHeight_a;
+void(__cdecl *BG_GetSpreadForWeapon)(playerState_s *ps, WeaponDef *weap,
+	float *minSpread, float *maxSpread)
+= (void(__cdecl*)(playerState_s*, WeaponDef*, float*, float*))BG_GetSpreadForWeapon_a;
+WeaponDef*(__cdecl *BG_GetWeaponDef)(int weaponIndex)
+= (WeaponDef*(__cdecl*)(int))BG_GetWeaponDef_a;
+WeaponVariantDef*(__cdecl *BG_GetWeaponVariantDef)(int weaponIndex)
+= (WeaponVariantDef*(__cdecl*)(int))BG_GetWeaponVariantDef_a;
+bool(__cdecl *CG_GetPlayerViewOrigin)(int localClientNum,
+	playerState_s *ps, float *origin)
+= (bool(__cdecl*)(int, playerState_s*, float*))CG_GetPlayerViewOrigin_a;
+void(__cdecl *)
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -119,4 +146,57 @@ bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos)
 		return false;
 
 	return true;
+}
+
+bool AimTarget_IsTargetVisible(centity_s *targetEnt, const char *visbone)
+{
+	unsigned short bone = SL_FindString(visbone, 0);
+	DWORD addr = AimTarget_IsTargetVisible_a;
+
+	__asm
+	{
+		mov			ecx, targetEnt
+		movzx		eax, bone
+		push		0
+		call		addr
+		add			esp, 4
+	}
+}
+
+bool AimTarget_IsTargetValid(centity_s *targetEnt, cg_s *cgameGlob)
+{
+	DWORD addr = AimTarget_IsTargetValid_a;
+	__asm
+	{
+		mov			edi, targetEnt
+		mov			esi, cgameGlob
+		call		addr
+	}
+}
+
+void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
+	const float *color, struct Material *material, int ratio)
+{
+	DWORD addr = DrawSketchPicGun_a;
+	__asm
+	{
+		mov			eax, rect
+		push		ratio
+		push		material
+		push		color
+		push		scrPlace
+		call		addr
+		add			esp, 10h
+	}
+}
+
+void CG_BulletEndpos(int randSeed, const float spread, const float *start,
+	float *end, float *dir, const float *forwardDir, const float *rightDir,
+	const float *upDir, const float maxRange)
+{
+	DWORD addr = CG_BulletEndpos_a;
+	__asm
+	{
+
+	}
 }

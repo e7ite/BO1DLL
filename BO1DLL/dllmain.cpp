@@ -11,9 +11,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
 		SetConsoleTitle("BlackOpsDLL");
 		freopen("CONOUT$", "w", stdout);
 
-		std::cout << std::hex << &cgameGlob->inKillCam;
-
 		InsertDetour(&Menu_PaintAll, Menu_PaintAllDetour);
+		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsDetour);
 		break;
     case DLL_PROCESS_DETACH:
 		FreeConsole();
