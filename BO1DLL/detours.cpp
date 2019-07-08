@@ -4,6 +4,8 @@ void(__cdecl *Menu_PaintAll)(int localClientNum, UiContext *dc)
 = (void(__cdecl*)(int, UiContext*))Menu_PaintAll_a;
 void(__cdecl *CL_CreateNewCommands)(int localClientNum)
 = (void(__cdecl*)(int))CL_CreateNewCommands_a;
+void(__cdecl *CL_WritePacket)(int localClientNum)
+= (void(__cdecl*)(int))CL_WritePacket_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -58,24 +60,44 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 {
 	Menu_PaintAll(localClientNum, dc);
 
+	CG_DrawRotatedPicPhysical(scrPlace, 500, 500, 100, 100, 0,
+		Colors::white, cgameGlob->compassMapMaterial);
+
 	RenderESP();
+	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
 }
 
 void CL_CreateNewCommandsDetour(int localClientNum)
 {
 	CL_CreateNewCommands(localClientNum);
+}
 
+void CL_WritePacketDetour(int localClientNum)
+{
 	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
-	ocmd->serverTime += 4;
+	ocmd->serverTime += 2;
 
 	if (ExecuteAimbot())
 	{
-		ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.x);
-		ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.y);
+		float oldAngle = SHORT2ANGLE(ocmd->angles[1]);
 
-		//ocmd->button_bits[0] |= 0x80000000;
-		//ccmd->button_bits[0] &= ~0x80000000;
+		//ocmd->angles[0] = ANGLE2SHORT(Aimbot::targetAngles.x);
+		//ocmd->angles[1] = ANGLE2SHORT(Aimbot::targetAngles.y);
+
+		SetAngles(Aimbot::targetAngles);
+
+		RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
+
+		FixMovement(ocmd, SHORT2ANGLE(ocmd->angles[1]), oldAngle,
+			(float)ocmd->forwardmove, (float)ocmd->rightmove);
+
+		ocmd->button_bits[0] |= 0x80000000;
+		ccmd->button_bits[0] &= ~0x80000000;
+		ocmd->button_bits[1] |= 0x20000000;
+		ccmd->button_bits[1] &= ~0x20000000;
 	}
+
+	CL_WritePacket(localClientNum);
 }

@@ -120,7 +120,13 @@ struct playerState_s
 	char pad03[0x13];						//0x0131
 	unsigned short weapon;					//0x0144
 	unsigned short lastStandPrevWeapon;		//0x0146
-	char pad04[0x38];						//0x0148
+	char pad04[0x20];						//0x0148
+	float fWeaponPosFrac;					//0x0168
+	int adsDelayTime;						//0x016C
+	int spreadOverride;						//0x0170
+	int spreadOverrideState;				//0x0174
+	float weaponSpinLerp;					//0x0178
+	int viewmodelIndex;						//0x017C
 	float viewangles[3];					//0x0180
 	char pad05[0x255C];						//0x018C
 }; //Size = 0x26E8
@@ -147,11 +153,16 @@ struct entityState_s
 {
 	int number;								//0x00
 	LerpEntityState lerp;					//0x04
-	char pad00[0xB2];						//0x0C
-	char eType;								//0xBE
-	char pad01[0x16];						//0xBF
+	char pad00[0x74];						//0x0C
+	int solid;								//0x80
+	int renderOptions;						//0x84
+	char pad01[0x10];						//0x88
+	int itemIndex;							//0x98
+	char pad02[0x22];						//0x9C
+	short eType;							//0xBE
+	char pad03[0x15];						//0xC0
 	char clientNum;							//0xD5
-	char pad02[0xA];						//0xD6
+	char pad04[0xA];						//0xD6
 }; //Size = 0xE0
 
 struct centity_s
@@ -241,15 +252,36 @@ struct cg_s
 	char pad04[0x140];						//0x05EE54	
 	float gunPitch;							//0x05EF94
 	float gunYaw;							//0x05EF98
-	char pad05[0xB0];						//0x05EF9C
+	char pad05[0x5C];						//0x05EF9C
+	struct Material *compassMapMaterial;	//0x05EFF8
+	float compassMapUpperLeft[2];			//0x05EFFC
+	float compassMapWorldSize[2];			//0x05F004
+	char pad06[0x40];						//0x05F00C
 	float zoomSensitivity;					//0x05F04C
-	char pad06[0x88];						//0x05F050
+	char pad07[0x88];						//0x05F050
 	int	inKillCam;							//0x05F0D8
-	char pad07[0x15C];						//0x05F0DC
+	char pad08[0x15C];						//0x05F0DC
 	clientInfo_t clients[0x12];				//0x05F238
-	char pad08[0xA038];						//0x065AD8
+	char pad09[0xA038];						//0x065AD8
 	float aimSpreadScale;					//0x06FB10
 }; 
+
+struct cgs_t
+{
+	int viewX;								//0x000
+	int viewY;								//0x004
+	int viewWidth;							//0x008
+	int viewHeight;							//0x00C
+	float viewAspect;						//0x010
+	int serverCommandSequence;				//0x014
+	int processSnapshotNum;					//0x018
+	int localServer;						//0x01C
+	char gametype[0x20];					//0x020
+	char szHostName[0x100];					//0x040
+	int maxclients;							//0x140
+	char mapname[0x40];						//0x144
+	char pad00[0x3044];						//0x184
+}; //Size = 0x31C8
 
 struct clSnapshot_t
 {
@@ -351,7 +383,7 @@ struct WeaponDef
 	char pad04[0x88];						//0x6CC
 	float aiSpread;							//0x754
 	float playerSpread;						//0x758
-	char pad04[0x44];						//0x75C
+	char pad05[0x44];						//0x75C
 	int minDamage;							//0x7A0
 	int minPlayerDamage;					//0x7A4
 	float fMaxDamageRange;					//0x7A8
@@ -443,6 +475,21 @@ enum FuncAddresses : DWORD
 	DrawSketchPicGun_a						= 0x7CE270,
 	CG_GetPlayerViewOrigin_a				= 0x679940,
 	CG_BulletEndpos_a						= 0x803020,
+	AngleVectors_a							= 0x657D30,
+	ClampChar_a								= 0x6624F0,
+	RandomBulletDir_a						= 0x802FA0,
+	CG_CompassUpYawVector_a					= 0x476540,
+	CG_WorldPosToCompass_a					= 0x4C45E0,
+	CG_CompassDrawPlayer_a					= 0x403500,
+	CG_CompassDrawDogs_a					= 0x403500,
+	CG_CompassDrawHelicopter_a				= 0x4C9DA0,
+	CG_CompassDrawPlayerPointers_MiniMap_a  = 0x566D30,
+	CG_CompassCalcDimensions_a				= 0x65DEE0,
+	CG_CompassDrawFriendlies_a				= 0x67E4E0,
+	CG_CompassDrawEnemies_a					= 0x6951D0,
+	CG_CompassDrawTurrets_a					= 0x6AB4D0,
+	CG_CompassDrawVehicles_a				= 0x55A600,
+	CG_CompassDrawPlayerMap_a				= 0x55FBC0,
 };
 
 using QWORD = unsigned long long;
@@ -454,6 +501,7 @@ namespace GameData
 	extern ScreenPlacement *scrPlace;
 	extern cg_s *cgameGlob;
 	extern clientActive_t *clientActive;
+	extern cgs_t *cgs;
 }
 
 using namespace GameData;
@@ -517,6 +565,10 @@ extern WeaponDef*(__cdecl *BG_GetWeaponDef)(int weaponIndex);
 extern WeaponVariantDef*(__cdecl *BG_GetWeaponVariantDef)(int weaponIndex);
 extern bool(__cdecl *CG_GetPlayerViewOrigin)(int localClientNum,
 	playerState_s *ps, float *origin);
+extern void(__cdecl *AngleVectors)(const float *angles, float *forward,
+	float *right, float *up);
+extern char(__cdecl *ClampChar)(int c);
+extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);

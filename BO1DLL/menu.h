@@ -37,3 +37,4 @@ float RenderUITextWithBackground(const char *text, float x, float y, float scale
 	ScreenAlignment align, const float *borderColor, const float *textColor,
 	Fonts fontName, int fontType = 0,
 	float *wOut = nullptr, float *hOut = nullptr);
+void WriteBytes(DWORD addr, const char *bytes, size_t len);

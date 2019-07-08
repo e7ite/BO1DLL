@@ -163,3 +163,13 @@ float RenderUITextWithBackground(const char *text, float x, float y, float scale
 
 	return y + textHeight + 2;
 }
+
+void WriteBytes(DWORD addr, const char *bytes, size_t len)
+{
+	DWORD curProtection;
+	VirtualProtect((LPVOID)addr, len, PAGE_EXECUTE_READWRITE, &curProtection);
+
+	WriteProcessMemory(GetCurrentProcess(), (LPVOID)addr, bytes, len, 0);
+
+	VirtualProtect((LPVOID)addr, len, curProtection, nullptr);
+}

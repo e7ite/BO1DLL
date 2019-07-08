@@ -39,12 +39,17 @@ void RenderESP()
 		for (__int32 i = 0; i < 1024; ++i)
 		{
 			centity_s *cent = CG_GetEntity(0, i);
+
+			if (!(cent->alive & 2))
+				continue;
+
 			if (ValidTarget(cent))
 			{	
 				const float *color = Colors::red;
 
-				if (cgameGlob->clients[i].team
-					== cgameGlob->clients[cgameGlob->clientNum].team)
+				if (strcmp(cgs->gametype, "dm") 
+					&& cgameGlob->clients[i].team
+						== cgameGlob->clients[cgameGlob->clientNum].team)
 					color = Colors::green;
 				else if (AimTarget_IsTargetVisible(cent, "j_head"))
 					color = Colors::blue;
@@ -57,6 +62,34 @@ void RenderESP()
 
 				DrawName(cent, headScreen, feetScreen, Colors::white);
 				DrawBorderBox(headScreen, feetScreen, color);
+			}
+			else if (cent->nextState.eType == 3)
+			{
+				WeaponVariantDef *weap = 
+					BG_GetWeaponVariantDef(cent->nextState.itemIndex % 2048);
+
+				if (!weap || !weap->weapDef->hudIcon)
+					continue;
+
+				float origin[2];
+				WorldPosToScreenPos(0, cent->pose.origin, origin);
+				rectDef_s rect = { origin[0], origin[1], 20, 20, 0, 0 };
+
+				if (weap->weapDef->hudIconRatio)
+					if (weap->weapDef->hudIconRatio == 1)
+					{
+						rect.x = rect.x - rect.w;
+						rect.w = rect.w * 2.0;
+					}
+					else
+					{
+						rect.x = rect.x - (float)(rect.w * 3.0);
+						rect.w = rect.w * 4.0;
+					}
+
+				if (weap)
+					CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
+						rect.w, rect.h, 0, Colors::white, weap->weapDef->hudIcon);
 			}
 		}
 	}

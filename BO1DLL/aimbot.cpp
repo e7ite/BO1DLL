@@ -51,8 +51,9 @@ int GetAimbotTarget()
 	{
 		centity_s *cent = CG_GetEntity(0, i);
 		if (ValidTarget(cent)
-			&& cgameGlob->clients[i].team 
+			&& (cgameGlob->clients[i].team 
 				!= cgameGlob->clients[cgameGlob->clientNum].team
+				|| !strcmp(cgs->gametype, "dm"))
 			&& AimTarget_GetTagPos(cent, "j_head", vec)
 			&& AimTarget_IsTargetVisible(cent, "j_head"))
 		{
@@ -97,14 +98,31 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 		deltaView = 360.0f - abs(f1 - f2);
 	deltaView = 360.0f - deltaView;
 
-	cmd->forwardmove = static_cast<char>(
+	cmd->forwardmove = ClampChar(
 		cosf(DegreesToRadians(deltaView)) * oldForwardmove
 		+ cosf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
 		);
-	cmd->rightmove = (
+	cmd->rightmove = ClampChar(
 		sinf(DegreesToRadians(deltaView)) * oldForwardmove
 		+ sinf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
 		);
+}
+
+void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
+{
+	float minSpread, maxSpread, spreadX, spreadY, spreadVar;
+	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
+
+	BG_GetSpreadForWeapon(ps, BG_GetWeaponDef(cgameGlob->weaponSelect),
+		&minSpread, &maxSpread);
+	RandomBulletDir(ps->commandTime, &spreadX, &spreadY);
+	spreadVar = minSpread + (maxSpread - minSpread) * cgSpread;
+
+	spreadX *= spreadVar;
+	spreadY *= spreadVar;
+
+	cmd->angles[0] += ANGLE2SHORT(spreadY);
+	cmd->angles[1] += ANGLE2SHORT(spreadX);
 }
 
 float DegreesToRadians(float deg)

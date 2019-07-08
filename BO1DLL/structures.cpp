@@ -5,6 +5,7 @@ UiContext *GameData::dc				   = (UiContext*)0x3777160;
 ScreenPlacement *GameData::scrPlace	   = (ScreenPlacement*)0x23C04F0;
 cg_s *GameData::cgameGlob			   = *(cg_s**)0xD55078;
 clientActive_t *GameData::clientActive = (clientActive_t*)0xE6DB80;
+cgs_t *GameData::cgs					= *(cgs_t**)0xD55044;
 Colors::Color Colors::white			   = { 255, 255, 255, 255 };
 Colors::Color Colors::black			   = {   0,   0,   0, 255 };
 Colors::Color Colors::red			   = { 255,   0,   0, 255 };
@@ -77,7 +78,12 @@ WeaponVariantDef*(__cdecl *BG_GetWeaponVariantDef)(int weaponIndex)
 bool(__cdecl *CG_GetPlayerViewOrigin)(int localClientNum,
 	playerState_s *ps, float *origin)
 = (bool(__cdecl*)(int, playerState_s*, float*))CG_GetPlayerViewOrigin_a;
-void(__cdecl *)
+void(__cdecl *AngleVectors)(const float *angles, float *forward,
+	float *right, float *up)
+= (void(__cdecl*)(const float*, float*, float*, float*))AngleVectors_a;
+char(__cdecl *ClampChar)(int c) = (char(__cdecl*)(int c))ClampChar_a;
+void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
+= (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -197,6 +203,16 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 	DWORD addr = CG_BulletEndpos_a;
 	__asm
 	{
-
+		movss		xmm0, spread
+		mov			edi, start
+		mov			esi, end
+		push		maxRange
+		push		upDir
+		push		rightDir
+		push		forwardDir
+		push		dir
+		push		randSeed
+		call		addr
+		add			esp, 1Ch
 	}
 }
