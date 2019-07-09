@@ -68,28 +68,40 @@ void RenderESP()
 				WeaponVariantDef *weap = 
 					BG_GetWeaponVariantDef(cent->nextState.itemIndex % 2048);
 
-				if (!weap || !weap->weapDef->hudIcon)
+				if (!weap)
 					continue;
 
 				float origin[2];
 				WorldPosToScreenPos(0, cent->pose.origin, origin);
-				rectDef_s rect = { origin[0], origin[1], 20, 20, 0, 0 };
 
-				if (weap->weapDef->hudIconRatio)
-					if (weap->weapDef->hudIconRatio == 1)
-					{
-						rect.x = rect.x - rect.w;
-						rect.w = rect.w * 2.0;
-					}
-					else
-					{
-						rect.x = rect.x - (float)(rect.w * 3.0);
-						rect.w = rect.w * 4.0;
-					}
+				if (strcmp(weap->szInternalName, "scavenger_item_mp"))
+				{
+					if (!weap->weapDef->hudIcon)
+						continue;
 
-				if (weap)
-					CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
-						rect.w, rect.h, 0, Colors::white, weap->weapDef->hudIcon);
+					rectDef_s rect = { origin[0], origin[1], 30, 30, 0, 0 };
+					if (weap->weapDef->hudIconRatio)
+						if (weap->weapDef->hudIconRatio == 1)
+						{
+							rect.x = rect.x - rect.w;
+							rect.w = rect.w * 2.0f;
+						}
+						else
+						{
+							rect.x = rect.x - (float)(rect.w * 3.0f);
+							rect.w = rect.w * 4.0f;
+						}
+
+					if (weap)
+						CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
+							rect.w, rect.h, 0, Colors::white, weap->weapDef->hudIcon);
+				}
+				else
+				{
+					CG_DrawRotatedPicPhysical(scrPlace, origin[0], origin[1],
+						30, 30, 0, Colors::white,
+						weap->weapDef->hudIcon);
+				}
 			}
 		}
 	}

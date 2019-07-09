@@ -84,6 +84,8 @@ void(__cdecl *AngleVectors)(const float *angles, float *forward,
 char(__cdecl *ClampChar)(int c) = (char(__cdecl*)(int c))ClampChar_a;
 void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
 = (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
+unsigned int(__cdecl *BG_GetPerkIndexForName)(const char *perkName)
+= (unsigned int(__cdecl*)(const char*))BG_GetPerkIndexForName_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -215,4 +217,10 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 		call		addr
 		add			esp, 1Ch
 	}
+}
+
+bool BG_HasPerk(int index, const char *perkName)
+{
+	return (*(long long*)cgameGlob->clients[index].perks 
+			& (1i64 << BG_GetPerkIndexForName(perkName))) != 0;
 }

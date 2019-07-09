@@ -8,9 +8,6 @@ namespace Aimbot
 	extern bool gotTarget;
 }
 
-#define ANGLE2SHORT(x) ((int)((x)*65536/360) & 65535)
-#define SHORT2ANGLE(x) ((x)*(360.0 / 65536))
-
 bool InGame();
 float Distance3D(vec3_t c1, vec3_t c2);
 bool ExecuteAimbot();

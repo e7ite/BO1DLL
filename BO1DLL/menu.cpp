@@ -129,7 +129,7 @@ float RenderUITextWithBackground(const char *text, float x, float y, float scale
 	Fonts fontName, int fontType, float *wOut, float *hOut)
 {
 	Font_s *font = UI_GetFontHandle(scrPlace, fontName, scale);
-	float textWidth = (float)UI_TextWidth(text, INT_MAX, font, scale) + 16.0f;
+	float textWidth = (float)UI_TextWidth(text, INT_MAX, font, scale) + 12.0f;
 	float textHeight = (float)UI_TextHeight(font, scale) + 2.0f;
 	float xAligned;
 

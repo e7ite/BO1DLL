@@ -60,8 +60,10 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 {
 	Menu_PaintAll(localClientNum, dc);
 
-	CG_DrawRotatedPicPhysical(scrPlace, 500, 500, 100, 100, 0,
-		Colors::white, cgameGlob->compassMapMaterial);
+	RenderUITextWithBackground(
+		BG_HasPerk(cgameGlob->clientNum, "specialty_scavenger") ? "true" : "false",
+		400, 400, 0.4f, ALIGN_RIGHT, Colors::green, Colors::transparentBlack,
+		normalFont);
 
 	RenderESP();
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
@@ -69,7 +71,16 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 
 void CL_CreateNewCommandsDetour(int localClientNum)
 {
+	//usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
+	//	*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
+
+	//if (Aimbot::gotTarget)
+	//{
+	//	ocmd->button_bits[0] |= 0x80000000;
+	//	ccmd->button_bits[0] &= ~0x80000000;
+	//}
 	CL_CreateNewCommands(localClientNum);
+
 }
 
 void CL_WritePacketDetour(int localClientNum)
@@ -77,26 +88,23 @@ void CL_WritePacketDetour(int localClientNum)
 	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
-	ocmd->serverTime += 2;
-
-	if (ExecuteAimbot())
+	if (Aimbot::gotTarget = ExecuteAimbot())
 	{
-		float oldAngle = SHORT2ANGLE(ocmd->angles[1]);
+		float oldAngle = ShortToAngle(ocmd->angles[1]);
 
-		//ocmd->angles[0] = ANGLE2SHORT(Aimbot::targetAngles.x);
-		//ocmd->angles[1] = ANGLE2SHORT(Aimbot::targetAngles.y);
+		//ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.x);
+		//ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.y);
 
 		SetAngles(Aimbot::targetAngles);
-
 		RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
 
-		FixMovement(ocmd, SHORT2ANGLE(ocmd->angles[1]), oldAngle,
-			(float)ocmd->forwardmove, (float)ocmd->rightmove);
+		ocmd->serverTime += 2;
 
-		ocmd->button_bits[0] |= 0x80000000;
-		ccmd->button_bits[0] &= ~0x80000000;
-		ocmd->button_bits[1] |= 0x20000000;
-		ccmd->button_bits[1] &= ~0x20000000;
+		//ocmd->button_bits[0] |= 0x80000000;
+		//ccmd->button_bits[0] &= ~0x80000000;
+
+		FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
+			(float)ocmd->forwardmove, (float)ocmd->rightmove);
 	}
 
 	CL_WritePacket(localClientNum);

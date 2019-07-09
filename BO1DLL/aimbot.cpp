@@ -110,19 +110,53 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 
 void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 {
-	float minSpread, maxSpread, spreadX, spreadY, spreadVar;
+	/*float minSpread, maxSpread, spreadX, spreadY, finalSpread;
 	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
+	WeaponDef *weap = BG_GetWeaponDef(cgameGlob->weaponSelect);
 
-	BG_GetSpreadForWeapon(ps, BG_GetWeaponDef(cgameGlob->weaponSelect),
-		&minSpread, &maxSpread);
+	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
 	RandomBulletDir(ps->commandTime, &spreadX, &spreadY);
-	spreadVar = minSpread + (maxSpread - minSpread) * cgSpread;
+	minSpread = ps->fWeaponPosFrac == 1.0f
+		? weap->fAdsSpread : minSpread;
+	finalSpread = cgSpread * (maxSpread - minSpread) + minSpread;
 
-	spreadX *= spreadVar;
-	spreadY *= spreadVar;
+	spreadX *= finalSpread;
+	spreadY *= finalSpread;
 
-	cmd->angles[0] += ANGLE2SHORT(spreadY);
-	cmd->angles[1] += ANGLE2SHORT(spreadX);
+	cmd->angles[0] += AngleToShort(spreadY);
+	cmd->angles[1] += AngleToShort(spreadX);*/
+
+	float minSpread, maxSpread, finalSpread, range;
+	vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
+	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
+	WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
+
+	if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
+		return;
+
+	if (cgameGlob->renderingThirdPerson == 1)
+		AngleVectors(cgameGlob->clients[cgameGlob->clientNum].playerAngles,
+			viewAxis[0], viewAxis[1], viewAxis[2]);
+	else
+	{
+		float tmp[3] = { cgameGlob->gunPitch, cgameGlob->gunYaw, 0.0f };
+		AngleVectors(tmp, viewAxis[0], viewAxis[1], viewAxis[2]);
+	}
+
+	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
+	minSpread = ps->fWeaponPosFrac == 1.0f
+		? weap->fAdsSpread : minSpread;
+	finalSpread = minSpread + (maxSpread - minSpread) * cgSpread;
+
+	range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
+
+	CG_BulletEndpos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
+		viewAxis[0], viewAxis[1], viewAxis[2], range);
+
+	vectoangles(spreadDir, spreadFix);
+
+	cmd->angles[0] += AngleToShort(cgameGlob->gunPitch - spreadFix[0]);
+	cmd->angles[1] += AngleToShort(cgameGlob->gunYaw - spreadFix[1]);
 }
 
 float DegreesToRadians(float deg)

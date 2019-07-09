@@ -209,26 +209,27 @@ struct clientInfo_t
 	int infoValid;							//0x000
 	int nextValid;							//0x004
 	int clientNum;							//0x008
-	char name[0x20];						//0x010
-	int team;								//0x030
-	int oldteam;							//0x034
-	int ffateam;							//0x038
-	int rank;								//0x03C
-	int prestige;							//0x040
+	char name[0x20];						//0x00C
+	int team;								//0x02C
+	int oldteam;							//0x030
+	int ffateam;							//0x034
+	int rank;								//0x038
+	int prestige;							//0x03C
+	int needsRevive;						//0x040
 	unsigned int perks[2];					//0x044
 	char pad00[0x8];						//0x04C
 	unsigned __int64 xuid;					//0x054
 	char clanAbbrev[8];						//0x05C
 	score_s score;							//0x064
-	char pad01[0x8];						//0x090
-	struct Material *hRankIcon;				//0x098
-	char pad02[0x8];						//0x09C
+	struct Material *hStatusIcon;			//0x090
+	struct Material *hRankIcon;				//0x094
+	char pad02[0xC];						//0x098
 	char model[0x40];						//0x0A4
 	char attachModelNames[6][0x40];			//0x0E4
 	char attachTagNames[6][0x40];			//0x264
 	char pad03[0x6C];						//0x3E4
 	float playerAngles[3];					//0x450
-	char pad04[0x178];						//0x45C
+	char pad04[0x174];						//0x45C
 }; //Size = 0x5D0
 
 struct cg_s
@@ -374,9 +375,9 @@ struct WeaponDef
 	bool bRifleBullet;						//0x54D
 	bool armorPiercing;						//0x54E
 	bool bBoltAction;						//0x54F
-	char pad03[0x108];						//0x550
-	float fAdsViewKickYawMin;				//0x658
-	float fAdsViewKickYawMax;				//0x65C
+	char pad03[0x168];						//0x550
+	float fAdsViewKickYawMin;				//0x6B8
+	float fAdsViewKickYawMax;				//0x6BC
 	float fAdsViewScatterMin;				//0x6C0
 	float fAdsViewScatterMax;				//0x6C4
 	float fAdsSpread;						//0x6C8
@@ -490,6 +491,7 @@ enum FuncAddresses : DWORD
 	CG_CompassDrawTurrets_a					= 0x6AB4D0,
 	CG_CompassDrawVehicles_a				= 0x55A600,
 	CG_CompassDrawPlayerMap_a				= 0x55FBC0,
+	BG_GetPerkIndexForName_a				= 0x5E6C80,
 };
 
 using QWORD = unsigned long long;
@@ -569,6 +571,7 @@ extern void(__cdecl *AngleVectors)(const float *angles, float *forward,
 	float *right, float *up);
 extern char(__cdecl *ClampChar)(int c);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
+extern unsigned int(__cdecl *BG_GetPerkIndexForName)(const char *perkName);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
@@ -578,3 +581,4 @@ void DrawSketchPicGun(ScreenPlacement *scrPlace, rectDef_s *rect,
 void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 	float *end, float *dir, const float *forwardDir, const float *rightDir,
 	const float *upDir, const float maxRange);
+bool BG_HasPerk(int index, const char *perkName);

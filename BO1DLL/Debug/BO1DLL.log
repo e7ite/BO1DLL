@@ -1,7 +1,7 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\documents\visual studio 2017\projects\bo1dll\debug\bo1dll.dll' is denied.
   
   
-  Library BO1DLL.dll Loaded 12:31:01
+  Library BO1DLL.dll Loaded 09:55:08
   
   
 cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
@@ -9,18 +9,14 @@ cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
 d:\documents\visual studio 2017\projects\bo1dll\bo1dll\aimbot.cpp(103): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
 d:\documents\visual studio 2017\projects\bo1dll\bo1dll\aimbot.cpp(107): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   detours.cpp
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\detours.cpp(84): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\detours.cpp(93): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   dllmain.cpp
   esp.cpp
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(82): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(87): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   menu.cpp
   structures.cpp
   Generating Code...
   BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 12:31:08
+  Library BO1DLL.dll Loaded 09:55:15
   
   
