@@ -110,25 +110,9 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 
 void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 {
-	/*float minSpread, maxSpread, spreadX, spreadY, finalSpread;
-	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
-	WeaponDef *weap = BG_GetWeaponDef(cgameGlob->weaponSelect);
-
-	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
-	RandomBulletDir(ps->commandTime, &spreadX, &spreadY);
-	minSpread = ps->fWeaponPosFrac == 1.0f
-		? weap->fAdsSpread : minSpread;
-	finalSpread = cgSpread * (maxSpread - minSpread) + minSpread;
-
-	spreadX *= finalSpread;
-	spreadY *= finalSpread;
-
-	cmd->angles[0] += AngleToShort(spreadY);
-	cmd->angles[1] += AngleToShort(spreadX);*/
-
 	float minSpread, maxSpread, finalSpread, range;
 	vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;
-	float cgSpread = cgameGlob->aimSpreadScale / 255.0f;
+	float aimSpreadScale = cgameGlob->aimSpreadScale / 255.0f;
 	WeaponDef *weap = BG_GetWeaponDef(ps->weapon);
 
 	if (!CG_GetPlayerViewOrigin(0, ps, viewOrg))
@@ -146,9 +130,10 @@ void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 	BG_GetSpreadForWeapon(ps, weap, &minSpread, &maxSpread);
 	minSpread = ps->fWeaponPosFrac == 1.0f
 		? weap->fAdsSpread : minSpread;
-	finalSpread = minSpread + (maxSpread - minSpread) * cgSpread;
+	finalSpread = (maxSpread - minSpread) * aimSpreadScale + minSpread;
 
-	range = weap->weapType == 3 ? weap->fMinDamageRange : 8192.0f;
+	range = weap->weapClass == 3 
+		? weap->fMinDamageRange : ((dvar_s*)0x38A9C20)->current.integer;
 
 	CG_BulletEndpos(ps->commandTime, finalSpread, viewOrg, spreadEnd, spreadDir,
 		viewAxis[0], viewAxis[1], viewAxis[2], range);

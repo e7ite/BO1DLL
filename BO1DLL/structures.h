@@ -59,6 +59,30 @@ union DvarValue
 	char color[4];							//0x04
 }; //Size = 0x10
 
+union DvarLimits
+{
+	struct
+	{
+		int stringCount;
+		const char **strings;
+	} enumeration;							//0x08
+	struct
+	{
+		int min;
+		int max;
+	} integer;								//0x08
+	struct
+	{
+		__int64 min;
+		__int64 max;
+	} integer64;							//0x10
+	struct
+	{
+		float min;
+		float max;
+	} value, vector;						//0x08
+}; //Size = 0x10
+
 struct dvar_s
 {
 	const char *name;						//0x00
@@ -69,9 +93,9 @@ struct dvar_s
 	int modified;							//0x14
 	DvarValue current;						//0x18
 	DvarValue latched;						//0x28
-	DvarValue reset;						//0x28
+	DvarValue reset;						//0x38
 	DvarValue saved;						//0x48
-	char pad00[0x10];						//0x58
+	DvarLimits domain;						//0x58
 	dvar_s *next;							//0x68
 }; //Size = 0x6C
 
@@ -158,11 +182,20 @@ struct entityState_s
 	int renderOptions;						//0x84
 	char pad01[0x10];						//0x88
 	int itemIndex;							//0x98
-	char pad02[0x22];						//0x9C
+	char pad02[0x14];						//0x9C
+	char events[4];							//0xB0
+	unsigned short eventParms[4];			//0xB4
+	unsigned short eventParm;				//0xBC
 	short eType;							//0xBE
-	char pad03[0x15];						//0xC0
+	char pad04[0xA];						//0xC0
+	unsigned short weapon;					//0xCA
+	unsigned short lastStandPrevWeapon;		//0xCC
+	unsigned short targetname;				//0xCE
+	short loopSoundFade;					//0xD0
+	short eventSequence;					//0xD2
+	char surfType;							//0xD4
 	char clientNum;							//0xD5
-	char pad04[0xA];						//0xD6
+	char pad05[0xA];						//0xD6
 }; //Size = 0xE0
 
 struct centity_s
@@ -171,8 +204,11 @@ struct centity_s
 	LerpEntityState lerp;					//0x060
 	char pad00[0x180];						//0x068
 	entityState_s nextState;				//0x1E8
-	char pad01[0x5C];						//0x2C8
+	short previousEventSequence;			//0x2C8
+	char pad01[0x5A];						//0x2CA
 	int alive;								//0x324
+
+	unsigned short GetEvent(int i) { return this->nextState.events[i & 3]; }
 }; //Size = 0x328
 
 struct refdef_s
@@ -326,15 +362,17 @@ struct usercmd_s
 
 struct clientActive_t
 {
-	bool usingAds;							//0x00000
-	char pad00[0x3];						//0x00001
-	int timeoutcount;						//0x00004
-	clSnapshot_t snap;						//0x00008
-	char pad01[0x124];						//0x02728
-	float viewangles[3];					//0x0284C
-	char pad02[0x40010];					//0x02858
-	usercmd_s cmds[0x80];					//0x42868
-	int cmdNumber;							//0x44268
+	bool usingAds;							//0x000000
+	char pad00[0x3];						//0x000001
+	int timeoutcount;						//0x000004
+	clSnapshot_t snap;						//0x000008
+	char pad01[0x124];						//0x002728
+	float viewangles[3];					//0x00284C
+	char pad02[0x40010];					//0x002858
+	usercmd_s cmds[0x80];					//0x042868
+	int cmdNumber;							//0x044268
+	char pad03[0x15C824];					//0x04426C
+	int useCount;							//0x1A0A90
 }; 
 
 struct WeaponDef

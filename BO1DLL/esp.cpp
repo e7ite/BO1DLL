@@ -63,10 +63,13 @@ void RenderESP()
 				DrawName(cent, headScreen, feetScreen, Colors::white);
 				DrawBorderBox(headScreen, feetScreen, color);
 			}
-			else if (cent->nextState.eType == 3)
+			else if (cent->nextState.eType == 3 || cent->nextState.eType == 4)
 			{
-				WeaponVariantDef *weap = 
-					BG_GetWeaponVariantDef(cent->nextState.itemIndex % 2048);
+				WeaponVariantDef *weap = BG_GetWeaponVariantDef(
+					cent->nextState.eType == 3 
+					? cent->nextState.itemIndex % 2048
+					: cent->nextState.weapon
+				);
 
 				if (!weap)
 					continue;
@@ -74,7 +77,8 @@ void RenderESP()
 				float origin[2];
 				WorldPosToScreenPos(0, cent->pose.origin, origin);
 
-				if (strcmp(weap->szInternalName, "scavenger_item_mp"))
+				if (!(BG_HasPerk(cgameGlob->clientNum, "specialty_scavenger") 
+					&&!strcmp(weap->szInternalName, "scavenger_item_mp")))
 				{
 					if (!weap->weapDef->hudIcon)
 						continue;
@@ -88,19 +92,20 @@ void RenderESP()
 						}
 						else
 						{
-							rect.x = rect.x - (float)(rect.w * 3.0f);
+							rect.x = rect.x - rect.w * 3.0f;
 							rect.w = rect.w * 4.0f;
 						}
 
 					if (weap)
 						CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
-							rect.w, rect.h, 0, Colors::white, weap->weapDef->hudIcon);
+							rect.w, rect.h, 0, Colors::white, 
+							weap->weapDef->hudIcon);
 				}
 				else
 				{
 					CG_DrawRotatedPicPhysical(scrPlace, origin[0], origin[1],
 						30, 30, 0, Colors::white,
-						weap->weapDef->hudIcon);
+						Material_RegisterHandle("perk_scavenger", 0));
 				}
 			}
 		}
