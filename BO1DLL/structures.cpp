@@ -1,11 +1,16 @@
 #include "structures.h"
 
 std::vector<QWORD> GameData::detours;
-UiContext *GameData::dc				   = (UiContext*)0x3777160;
-ScreenPlacement *GameData::scrPlace	   = (ScreenPlacement*)0x23C04F0;
+UiContext *GameData::dc				   =  (UiContext*)0x3777160;
+ScreenPlacement *GameData::scrPlace	   =  (ScreenPlacement*)0x23C04F0;
 cg_s *GameData::cgameGlob			   = *(cg_s**)0xD55078;
-clientActive_t *GameData::clientActive = (clientActive_t*)0xE6DB80;
-cgs_t *GameData::cgs					= *(cgs_t**)0xD55044;
+clientActive_t *GameData::clientActive =  (clientActive_t*)0xE6DB80;
+cgs_t *GameData::cgs				   = *(cgs_t**)0xD55044;
+Fonts GameData::normalFont			   = { 1,    "fonts/normalFont" };
+Fonts GameData::smallFont 			   = { 3,     "fonts/smallFont" };
+Fonts GameData::consoleFont  		   = { 5,   "fonts/consoleFont" };
+Fonts GameData::objectiveFont   	   = { 6, "fonts/objectiveFont" };
+
 Colors::Color Colors::white			   = { 255, 255, 255, 255 };
 Colors::Color Colors::black			   = {   0,   0,   0, 255 };
 Colors::Color Colors::red			   = { 255,   0,   0, 255 };
@@ -86,6 +91,29 @@ void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y)
 = (void(__cdecl*)(int, float*, float*))RandomBulletDir_a;
 unsigned int(__cdecl *BG_GetPerkIndexForName)(const char *perkName)
 = (unsigned int(__cdecl*)(const char*))BG_GetPerkIndexForName_a;
+int(*Sys_Milliseconds)() = (int(*)())Sys_Milliseconds_a;
+void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace,
+	float x, float y, float width, float height, int horzAlign, int vertAlign,
+	float angle, const float *color, struct Material *material)
+= (void(__cdecl*)(ScreenPlacement*, float, float, float, float, int, int,
+		float, const float*, Material*))CG_DrawRotatedPic_a;
+void(__cdecl *CL_DrawTextWithEffects)(ScreenPlacement *scrPlace,
+	const char *text, int maxChars, Font_s *font, float x, float y,
+	float rotation, int horzAlign, int vertAlign, float xScale, float yScale,
+	const float *color, int style, const float *glowColor,
+	struct Material *fxMaterial, Material *fxMaterialGlow, int fxBirthTime,
+	int fxLetterTime, int fxDecayStartTime, int fxDecayDuration)
+= (void(__cdecl*)(ScreenPlacement *,const char*, int, Font_s*, float, float,
+	float, int, int, float, float, const float*, int, const float*,
+	Material*, Material*, int, int, int, int))CL_DrawTextWithEffects_a;
+void(__cdecl *UI_DrawTextWithGlow)(ScreenPlacement *scrPlace,
+	const char *text, int maxChars, Font_s *font, float x, float y,
+	int horzAlign, int vertAlign, float scale, const float *color,
+	int style, const float *glowColor, bool subtitle, bool cinematic)
+= (void(__cdecl*)(ScreenPlacement*, const char*, int, Font_s*, float,
+	float, int, int, float, const float*, int, const float*,
+	bool, bool))UI_DrawTextWithGlow_a;
+
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {

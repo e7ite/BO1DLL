@@ -12,6 +12,12 @@ void(__cdecl *CL_DrawStretchPic)(ScreenPlacement *scrPlace, float x,
 	const float *color, Material *material)
 = (void(__cdecl*)(ScreenPlacement*, float, float, float, float, int, int,
 	float, float, float, float, const float*, Material*))CL_DrawStretchPic_a;
+void(__cdecl *Menu_HandleKey)(int localClientNum, UiContext *dc,
+	struct menuDef_t *menu, int key, int down)
+= (void(__cdecl*)(int, UiContext*, menuDef_t*, int, int))Menu_HandleKey_a;
+void(__cdecl *Menu_HandleMouseMove)(int localClientNum, UiContext *dc,
+	struct menuDef_t *menu)
+= (void(__cdecl*)(int, UiContext*, menuDef_t*))Menu_HandleMouseMove_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -66,16 +72,11 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 {
 	Menu_PaintAll(localClientNum, dc);
 
-	/*std::stringstream str;
-	str << std::hex << BG_GetWeaponDef(cgameGlob->weaponSelect);
+	static bool built;
+	if (!built)
+		Menu::Build(), built = true;
 
-	RenderUITextWithBackground(std::to_string(
-			BG_GetWeaponDef(cgameGlob->weaponSelect)->fMinDamageRange
-	).data(),
-		400, 200, 0.6f, ALIGN_RIGHT, Colors::red, Colors::red, normalFont);
-	RenderUITextWithBackground(str.str().data(),
-		400, 400, 0.6f, ALIGN_RIGHT, Colors::red, Colors::red, normalFont);
-*/
+	Menu::Execute();
 	RenderESP();
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
 }
@@ -116,7 +117,6 @@ void CL_WritePacketDetour(int localClientNum)
 
 		ocmd->button_bits[0] &= ~0x80000000;
 		ccmd->button_bits[0] |=  0x80000000;
-
 	}
 
 	CL_WritePacket(localClientNum);
@@ -129,4 +129,16 @@ void CL_DrawStretchPicDetour(ScreenPlacement *scrPlace, float x,
 {
 	CL_DrawStretchPic(scrPlace, x, y, w, h, horzAlign, vertAlign,
 		s1, t1, s2, t2, color, material);
+}
+
+void Menu_HandleKeyDetour(int localClientNum, UiContext *dc,
+	struct menuDef_t *menu, int key, unsigned int down)
+{
+	Menu_HandleKey(localClientNum, dc, menu, key, down);
+}
+
+void Menu_HandleMouseMoveDetour(int localClientNum, UiContext *dc,
+	struct menuDef_t *menu)
+{
+	Menu_HandleMouseMove(localClientNum, dc, menu);
 }

@@ -11,10 +11,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
 		SetConsoleTitle("BlackOpsDLL");
 		freopen("CONOUT$", "w", stdout);
 
-		InsertDetour(&Menu_PaintAll, Menu_PaintAllDetour);
+		InsertDetour(&Menu_PaintAll,		Menu_PaintAllDetour);
 		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsDetour);
-		InsertDetour(&CL_WritePacket, CL_WritePacketDetour);
-		InsertDetour(&CL_DrawStretchPic, CL_DrawStretchPicDetour);
+		InsertDetour(&CL_WritePacket,		CL_WritePacketDetour);
+		InsertDetour(&CL_DrawStretchPic,	CL_DrawStretchPicDetour);
+		InsertDetour(&Menu_HandleKey,		Menu_HandleKeyDetour);
+		InsertDetour(&Menu_HandleMouseMove, Menu_HandleMouseMoveDetour);
 		break;
     case DLL_PROCESS_DETACH:
 		FreeConsole();

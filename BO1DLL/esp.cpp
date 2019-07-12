@@ -20,12 +20,15 @@ void DrawBorderBox(float head[2], float foot[2], const float *color)
 
 void DrawName(centity_s *entity, float head[2], float foot[2], const float *color)
 {
+	Font_s *fontPointer;
 	float namePos[2];
+	const char *name = cgameGlob->clients[entity->nextState.number].name;
 	WorldPosToScreenPos(0, entity->pose.origin, namePos);
 
-	RenderGameText(cgameGlob->clients[entity->nextState.number].name,
-		namePos[0], head[1], 0.3f, ALIGN_CENTER, color,
-		"fonts/normalFont");
+	RenderGameText(name,
+		AlignText(name, normalFont, 0.3f, 
+			namePos[0], ALIGN_CENTER, 0, 0, &fontPointer),
+		namePos[1], 0.3f, Colors::white, fontPointer, 0);
 }
 
 void RenderESP()

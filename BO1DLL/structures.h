@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <functional>
 #include <detours.h>
 #include <sstream>
 
@@ -530,6 +531,37 @@ enum FuncAddresses : DWORD
 	CG_CompassDrawVehicles_a				= 0x55A600,
 	CG_CompassDrawPlayerMap_a				= 0x55FBC0,
 	BG_GetPerkIndexForName_a				= 0x5E6C80,
+	Sys_Milliseconds_a						= 0x675F60,
+	CG_DrawRotatedPic_a						= 0x68FA00,
+	CL_DrawTextWithEffects_a				= 0x5674D0,
+	UI_DrawTextWithGlow_a					= 0x42D970,
+};
+
+namespace Colors
+{
+	struct Color
+	{
+		float r, g, b, a;
+
+		Color() : r(0.0F), g(0.0f), b(0.0f), a(1.0f) {}
+		Color(float r, float g, float b, float a)
+			: r(r / 255.0f), g(g / 255.0f), b(b / 255.0f), a(a / 255.0f) {}
+
+		operator float*() { return reinterpret_cast<float*>(this); }
+	};
+
+	extern Color white;
+	extern Color black;
+	extern Color red;
+	extern Color green;
+	extern Color blue;
+	extern Color transparentBlack;
+}
+
+struct Fonts
+{
+	int index;
+	const char *dir;
 };
 
 using QWORD = unsigned long long;
@@ -542,30 +574,13 @@ namespace GameData
 	extern cg_s *cgameGlob;
 	extern clientActive_t *clientActive;
 	extern cgs_t *cgs;
+	extern Fonts normalFont;
+	extern Fonts smallFont;
+	extern Fonts consoleFont;
+	extern Fonts objectiveFont;
 }
 
 using namespace GameData;
-
-namespace Colors
-{
-	struct Color
-	{
-		float r, g, b, a;
-
-		Color() : r(0.0F), g(0.0f), b(0.0f), a(1.0f) {}
-		Color(float r, float g, float b, float a)
-			: r(r / 255), g(g / 255), b(b / 255), a(a / 255) {}
-
-		operator float*() { return reinterpret_cast<float*>(this); }
-	};
-
-	extern Color white;
-	extern Color black;
-	extern Color red;
-	extern Color green;
-	extern Color blue;
-	extern Color transparentBlack;
-}
 
 extern void(__cdecl *UI_DrawText)(ScreenPlacement *scrPlace,
 	const char *text, int maxChars, Font_s *font, float x, float y,
@@ -594,7 +609,7 @@ extern void(__cdecl *R_AddCmdDrawText)(const char *text, int maxChars,
 	const float *color, int style);
 extern int(__cdecl *R_TextWidth)(const char *text, int maxChars, Font_s *font);
 extern int(__cdecl *R_TextHeight)(Font_s *font);
-extern Font_s*(__cdecl *UI_GetFontHandle)(ScreenPlacement *scrPlace, int maxChars,
+extern Font_s*(__cdecl *UI_GetFontHandle)(ScreenPlacement *scrPlace, int fontEnum,
 	float scale);
 extern int(__cdecl *UI_TextWidth)(const char *text, int maxChars, Font_s *font,
 	float scale);
@@ -610,6 +625,20 @@ extern void(__cdecl *AngleVectors)(const float *angles, float *forward,
 extern char(__cdecl *ClampChar)(int c);
 extern void(__cdecl *RandomBulletDir)(int randSeed, float *x, float *y);
 extern unsigned int(__cdecl *BG_GetPerkIndexForName)(const char *perkName);
+extern int(*Sys_Milliseconds)();
+extern void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace,
+	float x, float y, float width, float height, int horzAlign, int vertAlign,
+	float angle, const float *color, struct Material *material);
+extern void(__cdecl *CL_DrawTextWithEffects)(ScreenPlacement *scrPlace,
+	const char *text, int maxChars, Font_s *font, float x, float y,
+	float rotation, int horzAlign, int vertAlign, float xScale, float yScale,
+	const float *color, int style, const float *glowColor,
+	struct Material *fxMaterial, Material *fxMaterialGlow, int fxBirthTime,
+	int fxLetterTime, int fxDecayStartTime, int fxDecayDuration);
+extern void(__cdecl *UI_DrawTextWithGlow)(ScreenPlacement *scrPlace,
+	const char *text, int maxChars, Font_s *font, float x, float y,
+	int horzAlign, int vertAlign, float scale, const float *color,
+	int style, const float *glowColor, bool subtitle, bool cinematic);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
