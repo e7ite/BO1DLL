@@ -1,7 +1,6 @@
 #include "aimbot.h"
 
 vec3_t Aimbot::targetAngles;
-bool Aimbot::gotTarget;
 
 float Distance3D(vec3_t c1, vec3_t c2)
 {
@@ -12,20 +11,18 @@ float Distance3D(vec3_t c1, vec3_t c2)
 	return sqrtf((float)((dx * dx) + (dy * dy) + (dz * dz)));
 }
 
-bool ExecuteAimbot()
+bool Aimbot::Execute()
 {
 	if (InGame())
 	{
-		int target = GetAimbotTarget();
+		int target = GetTarget();
 		if (target != -1)
 		{
-			AimTarget_GetTagPos(CG_GetEntity(0, target), "j_head", Aimbot::targetAngles);
+			AimTarget_GetTagPos(CG_GetEntity(0, target), 
+				"j_head", targetAngles);
 
-			vectoangles(Aimbot::targetAngles - cgameGlob->refdef.vieworg,
-				Aimbot::targetAngles);
-			Aimbot::targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
-
-			//SetAngles(Aimbot::targetAngles);
+			vectoangles(targetAngles - cgameGlob->refdef.vieworg, targetAngles);
+			targetAngles -= cgameGlob->predictedPlayerState.delta_angles;
 
 			return true;
 		}
@@ -34,23 +31,23 @@ bool ExecuteAimbot()
 	return false;
 }
 
-bool ValidTarget(centity_s *cent)
+bool Aimbot::ValidateTarget(centity_s *cent)
 {
 	return cent->nextState.number != cgameGlob->clientNum
 		&& cent->nextState.eType == 1
 		&& cent->alive & 2;
 }
 
-int GetAimbotTarget()
+int Aimbot::GetTarget()
 {
 	int target = -1;
 	float vec[3];
-	float closestDistance = static_cast<float>(INT_MAX);
+	float closestDistance = 9999999999.0f;
 
 	for (__int32 i = 0; i < 1024; ++i)
 	{
 		centity_s *cent = CG_GetEntity(0, i);
-		if (ValidTarget(cent)
+		if (ValidateTarget(cent)
 			&& (cgameGlob->clients[i].team 
 				!= cgameGlob->clients[cgameGlob->clientNum].team
 				|| !strcmp(cgs->gametype, "dm"))
@@ -70,14 +67,7 @@ int GetAimbotTarget()
 	return target;
 }
 
-void SetAngles(const vec3_t& angles)
-{
-	clientActive->viewangles[0] = angles.pitch;
-	clientActive->viewangles[1] = angles.yaw;
-	clientActive->viewangles[2] = angles.roll;
-}
-
-void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
+void Aimbot::FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 	float oldForwardmove, float oldRightmove)
 {
 	float deltaView = currentAngle - oldAngle, f1, f2;
@@ -96,19 +86,20 @@ void FixMovement(usercmd_s *cmd, float currentAngle, float oldAngle,
 		deltaView = abs(f2 - f1);
 	else
 		deltaView = 360.0f - abs(f1 - f2);
-	deltaView = 360.0f - deltaView;
 
-	cmd->forwardmove = ClampChar(
-		cosf(DegreesToRadians(deltaView)) * oldForwardmove
-		+ cosf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
-		);
-	cmd->rightmove = ClampChar(
-		sinf(DegreesToRadians(deltaView)) * oldForwardmove
-		+ sinf(DegreesToRadians(deltaView + 90.f)) * oldRightmove
-		);
+	deltaView = 360.0f - deltaView;
+	
+	float deltaRad = DegreesToRadians(deltaView);
+	float rightDeltaRad = DegreesToRadians(deltaView + 90.f);
+	cmd->forwardmove = ClampChar((int)(
+		cosf(deltaRad) * oldForwardmove + cosf(rightDeltaRad) * oldRightmove
+	));
+	cmd->rightmove = ClampChar((int)(
+		sinf(deltaRad) * oldForwardmove + sinf(rightDeltaRad) * oldRightmove
+	));
 }
 
-void RemoveSpread(playerState_s *ps, usercmd_s *cmd)
+void Aimbot::RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 {
 	float minSpread, maxSpread, finalSpread, range;
 	vec3_t viewOrg, viewAxis[3], spreadEnd, spreadDir, spreadFix;

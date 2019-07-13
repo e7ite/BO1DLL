@@ -1,22 +1,22 @@
-﻿  
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\documents\visual studio 2017\projects\bo1dll\debug\bo1dll.dll' is denied.
   
-  Library BO1DLL.dll Loaded 01:36:29
+  
+  Library BO1DLL.dll Loaded 12:54:58
   
   
 cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
   aimbot.cpp
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\aimbot.cpp(103): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\aimbot.cpp(107): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   detours.cpp
   dllmain.cpp
   esp.cpp
+d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(121): warning C4101: 'headScreen': unreferenced local variable
+d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(121): warning C4101: 'feetScreen': unreferenced local variable
   menu.cpp
   structures.cpp
   Generating Code...
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(28): warning C4700: uninitialized local variable 'fontPointer' used
   BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 01:36:36
+  Library BO1DLL.dll Loaded 12:55:05
   
   

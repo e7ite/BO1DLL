@@ -6,60 +6,115 @@ int Menu::toggled;
 int Menu::currentSub;
 int Menu::timer;
 
-int Variables::enemyESP;
-int Variables::friendlyESP;
 int Variables::enableAimbot;
 int Variables::aimKey;
+int Variables::aimType;
+int Variables::autoAim;
+int Variables::autoShoot;
+int Variables::noSpread;
+int Variables::noRecoil;
+int Variables::enemyESP;
+int Variables::friendlyESP;
+int Variables::scavengerESP;
+int Variables::pickupESP;
+int Variables::missileESP;
 
 void Menu::Build()
 {
 	using namespace Variables;
 
 	for (int sub = MAIN_MENU; sub <= ESP_MENU; ++sub)
-		Menu::options.push_back(std::vector<Option>());
+		options.push_back(std::vector<Option>());
 
-	Menu::Insert(MAIN_MENU, "Aimbot Menu", nullptr,
-		TYPE_SUB, std::bind(Menu::LoadSub, AIMBOT_MENU));
-	Menu::Insert(MAIN_MENU, "ESP Menu", nullptr,
-		TYPE_SUB, std::bind(Menu::LoadSub, ESP_MENU));
-	Menu::Insert(MAIN_MENU, "Misc Menu", nullptr,
-		TYPE_SUB, std::bind(Menu::LoadSub, MISC_MENU));
+	Insert(MAIN_MENU, "Aimbot Menu", nullptr,
+		TYPE_SUB, std::bind(LoadSub, AIMBOT_MENU));
+	Insert(MAIN_MENU, "ESP Menu", nullptr,
+		TYPE_SUB, std::bind(LoadSub, ESP_MENU));
+	Insert(MAIN_MENU, "Misc Menu", nullptr,
+		TYPE_SUB, std::bind(LoadSub, MISC_MENU));
 
-	Menu::Insert(ESP_MENU, "Enemy ESP", &enemyESP,
-		TYPE_BOOL, std::bind(Menu::BoolModify, &enemyESP));
-	Menu::Insert(ESP_MENU, "Friendly ESP", &friendlyESP,
-		TYPE_BOOL, std::bind(Menu::BoolModify, &friendlyESP));
+	Insert(ESP_MENU, "Enemy ESP", &enemyESP,
+		TYPE_BOOL, std::bind(BoolModify, &enemyESP));
+	Insert(ESP_MENU, "Friendly ESP", &friendlyESP,
+		TYPE_BOOL, std::bind(BoolModify, &friendlyESP));
+	Insert(ESP_MENU, "Pickup ESP", &pickupESP,
+		TYPE_BOOL, std::bind(BoolModify, &pickupESP));
+	Insert(ESP_MENU, "Missile ESP", &missileESP,
+		TYPE_BOOL, std::bind(BoolModify, &missileESP));
+	Insert(ESP_MENU, "Scavenger ESP", &scavengerESP,
+		TYPE_BOOL, std::bind(BoolModify, &scavengerESP));
 
-	Menu::Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
-		TYPE_BOOL, std::bind(Menu::BoolModify, &enableAimbot));
-	Menu::Insert(AIMBOT_MENU, "Aim Key", &aimKey, TYPE_INT,
-		std::bind(Menu::IntModify, &aimKey, &Menu::toggled, 0, 2));
+	Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
+		TYPE_BOOL, std::bind(BoolModify, &enableAimbot));
+	Insert(AIMBOT_MENU, "Aim Key", &aimKey,
+		TYPE_INT, std::bind(IntModify, &aimKey, 0, 2));
+	Insert(AIMBOT_MENU, "Aim Type", &aimType,
+		TYPE_INT, std::bind(IntModify, &aimType, 0, 2));
+	Insert(AIMBOT_MENU, "Auto Aim", &autoAim,
+		TYPE_BOOL, std::bind(BoolModify, &autoAim));
+	Insert(AIMBOT_MENU, "Auto Shoot", &autoShoot,
+		TYPE_BOOL, std::bind(BoolModify, &autoShoot));
+	Insert(AIMBOT_MENU, "No Recoil", &noRecoil,
+		TYPE_BOOL, std::bind(BoolModify, &noRecoil));
+	Insert(AIMBOT_MENU, "No Spread", &noSpread,
+		TYPE_BOOL, std::bind(BoolModify, &noSpread));
 }
 
 void Menu::Insert(int sub, const char *option, int *data,
 	OptionType type, std::function<void()> callback)
 {
-	Menu::options.at(sub).push_back(Option(option, data, type, callback));
+	options.at(sub).push_back(Option(option, data, type, callback));
 }
 
 void Menu::LoadSub(int sub)
 {
-	Menu::currentSub = sub;
+	currentSub = sub;
+}
+
+void Menu::CloseSub()
+{
+	switch (currentSub)
+	{
+	case MAIN_MENU:
+		open = false;
+		break;
+	case AIMBOT_MENU:
+	case ESP_MENU:
+	case MISC_MENU:
+		currentSub = MAIN_MENU;
+		break;
+	default:
+		open = false;
+		break;
+	}
 }
 
 void Menu::BoolModify(int *var)
 {
-	*var = !var;
+	*var = !*var;
+}
+
+void Menu::IntModify(int *var, int min, int max)
+{
+	if (toggled)
+		++(*var);
+	else
+		--(*var);
+
+	if (*var > max)
+		*var = min;
+	if (*var < min)
+		*var = max;
 }
 
 bool Menu::Ready()
 {
-	return Sys_Milliseconds() > Menu::timer;
+	return Sys_Milliseconds() > timer;
 }
 
 void Menu::Wait(int ms)
 {
-	Menu::timer = Sys_Milliseconds() + ms;
+	timer = Sys_Milliseconds() + ms;
 }
 
 void Menu::Execute()
@@ -78,78 +133,91 @@ void Menu::Execute()
 		xAligned, optionY, textWidth, textHeight, Colors::blue,
 		Colors::white, fontPointer, 0.3f, true);
 
-	float borderX = menuCenterX - 140, borderY = menuCenterY - 100,
-		borderW = menuCenterX - 20,
-		borderH = textHeight * Menu::options[Menu::currentSub].size();
+	float borderW = menuCenterX - 20,
+		borderH = textHeight * options[currentSub].size(),
+		borderX = menuCenterX - borderW / 2, borderY = menuCenterY - 98;
 	UI_FillRect(scrPlace, borderX, borderY, borderW, borderH, 0, 0,
 		Colors::transparentBlack);
 	UI_DrawRect(scrPlace, borderX, borderY, borderW, borderH, 0, 0, 2,
 		Colors::blue);
 
-	int index = 0;
-	for (const auto &i : Menu::options[Menu::currentSub])
+	float optionX = borderX + 4, 
+		optionH = (float)UI_TextHeight(fontPointer, 0.3f);
+	for (const auto &i : options[currentSub])
 	{
 		Colors::Color color = Colors::white;
 
-		optionY += RenderUIText(i.option, borderX,
-			optionY, 0.3f, Colors::blue, fontPointer);
-
-		if (MonitorMouse(i, index++, borderX, optionY, borderW, borderH))
+		if (MonitorMouse(i, borderX, optionY - 2, borderW, optionH + 2))
 			color = Colors::blue;
 
 		switch (i.type)
 		{
 		case TYPE_BOOL:
-			UI_FillRect(scrPlace, borderX, optionY, 15, 15,
-				0, 0, *i.data ? Colors::blue : Colors::transparentBlack);
+			UI_FillRect(scrPlace, borderX + borderW - 12,
+				optionY - optionH + 2, 8, 8, 0, 0, 
+				*i.data ? Colors::blue : Colors::transparentBlack);
 			break;
 		case TYPE_INT:
+			float outWidth;
 			std::string data = std::to_string(*i.data);
-			RenderUIText(data.data(), AlignText(data.data(), normalFont,
-				0.3f, menuCenterX + 20, ALIGN_RIGHT, 1, 0),
+			
+			RenderUIText(data.data(), 
+				AlignText(data.data(), normalFont,
+					0.3f, borderX + borderW, ALIGN_RIGHT, 1, 0, nullptr,
+					&outWidth) - outWidth + 2,
 				optionY, 0.3f, color, fontPointer);
 			break;
 		}
+
+		optionY += RenderUIText(i.option, optionX,
+			optionY, 0.3f, color, fontPointer);
 	}
 }
 
-void Menu::IntModify(int *var, int *increment, int min, int max)
-{
-	if (*increment)
-		++(*var);
-	else
-		--(*var);
-
-	if (*var > max)
-		*var = min;
-	if (*var < min)
-		*var = max;
-}
-
-bool Menu::MonitorMouse(const Option &opt, int optPos, float optionX, float optionY,
+bool Menu::MonitorMouse(const Option &opt, float optionX, float optionY,
 	float optionW, float optionH)
 {
-	if (dc->cursorPos[0] > optionX && dc->cursorPos[0] < optionW
-		&& dc->cursorPos[1] > optionY - (optionH - optionY)
+	if (dc->cursorPos[0] > optionX 
+		&& dc->cursorPos[0] < optionX + optionW
+		&& dc->cursorPos[1] > optionY - optionH
 		&& dc->cursorPos[1] < optionY)
 	{
-
-		if (Menu::Ready())
+		if (Ready())
 			if (GetAsyncKeyState(VK_LBUTTON) & 0x10000)
 			{
+				toggled = true;
 				opt.callback();
-				Menu::Wait(200);
+				toggled = false;
+				Wait(200);
 			}
 			else if (GetAsyncKeyState(VK_RBUTTON) & 0x10000)
 			{
 				opt.callback();
-				Menu::Wait(200);
+				Wait(200);
 			}
 
 		return true;
 	}
 
 	return false;
+}
+
+void Menu::MonitorKeys()
+{
+	if (Ready())
+	{
+		if (GetAsyncKeyState(VK_HOME) && !open)
+		{
+			open = true;
+			currentSub = MAIN_MENU;
+			Wait(200);
+		}
+		if (GetAsyncKeyState(VK_BACK) & 0x10000)
+		{
+			CloseSub();
+			Wait(200);
+		}
+	}
 }
 
 void RenderShader(float x, float y, float width, float height, float angle,
@@ -206,7 +274,7 @@ float AlignText(const char *text, const Fonts &font, float scale, float initX,
 	else
 	{
 		fontPointer = CL_RegisterFont(font.dir, 0);
-		width = (float)R_TextWidth(text, INT_MAX, fontPointer);
+		width = (float)R_TextWidth(text, INT_MAX, fontPointer) * scale;
 		height = (float)R_TextHeight(fontPointer) * scale + 2.0f;
 	}
 
@@ -246,16 +314,16 @@ float RenderGameText(const char *text, float x, float y, float scale,
 }
 
 float RenderGameTextWithBackground(const char *text, float x, float y,
-	float w, float h, const float *borderColor, const float *textColor,
+	float textW, float textH, const float *borderColor, const float *textColor,
 	Font_s *font, float scale)
 {
-	DrawFillRect(x, y - h, w - 2, h + 2,
+	DrawFillRect(x, y - textH, textW - 2, textH + 2,
 		Colors::transparentBlack, 0);
-	DrawEmptyRect(x, y - h, w - 2, h + 2, 2,
+	DrawEmptyRect(x, y - textH, textW - 2, textH + 2, 2,
 		borderColor);
 	RenderGameText(text, x + 6, y, scale, textColor, font, 0);
 
-	return h + 2;
+	return textH + 2;
 }
 
 float RenderUIText(const char *text, float x, float y, float scale,
@@ -272,17 +340,17 @@ float RenderUIText(const char *text, float x, float y, float scale,
 }
 
 float RenderUITextWithBackground(const char *text, float x, float y,
-	float w, float h, const float *borderColor, const float *textColor,
+	float textW, float textH, const float *borderColor, const float *textColor,
 	Font_s *font, float scale, bool glow)
 {
-	UI_FillRect(scrPlace, x, y - h, w - 2, h + 2,
+	UI_FillRect(scrPlace, x, y - textH, textW - 2, textH + 2,
 		0, 0, Colors::transparentBlack);
-	UI_DrawRect(scrPlace, x, y - h, w - 2, h + 2,
+	UI_DrawRect(scrPlace, x, y - textH, textW - 2, textH + 2,
 		0, 0, 2, borderColor);
 	RenderUIText(text, x + 6, y, scale, textColor,
 		font, glow, borderColor);
 
-	return h + 2;
+	return textH + 2;
 }
 
 void WriteBytes(DWORD addr, const char *bytes, size_t len)

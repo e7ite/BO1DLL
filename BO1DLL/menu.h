@@ -50,20 +50,31 @@ namespace Menu
 	void Insert(int sub, const char *option, int *data,
 		OptionType type, std::function<void()> func);
 	void LoadSub(int sub);
+	void CloseSub();
 	void BoolModify(int *var);
-	void IntModify(int *var, int *increment, int min, int max);
+	void IntModify(int *var, int min, int max);
 	bool Ready();
 	void Wait(int ms);
-	bool MonitorMouse(const Option &opt, int optPos, 
-		float optionX, float optionY, float optionW, float optionH);
+	bool MonitorMouse(const Option &opt, float optionX, float optionY,
+		float optionW, float optionH);
+	void MonitorKeys();
 };
 
 namespace Variables
 {
-	extern int enemyESP;
-	extern int friendlyESP;
 	extern int enableAimbot;
 	extern int aimKey;
+	extern int aimType;
+	extern int autoAim;
+	extern int autoShoot;
+	extern int noSpread;
+	extern int noRecoil;
+
+	extern int enemyESP;
+	extern int friendlyESP;
+	extern int scavengerESP;
+	extern int pickupESP;
+	extern int missileESP;
 }
 
 void DrawFillRect(float x, float y, float width, float height,
@@ -77,12 +88,12 @@ float RenderGameText(const char *text, float x, float y, float scale,
 	const float *color, Font_s *font,
 	float rotation);
 float RenderGameTextWithBackground(const char *text, float x, float y,
-	float w, float h, const float *borderColor, const float *textColor,
+	float textW, float textH, const float *borderColor, const float *textColor,
 	Font_s *font, float scale);
 float RenderUIText(const char *text, float x, float y, float scale,
 	const float *color, Font_s *font,
 	bool glow = false, const float *glowColor = nullptr);
 float RenderUITextWithBackground(const char *text, float x, float y,
-	float w, float h, const float *borderColor, const float *textColor,
+	float textW, float textH, const float *borderColor, const float *textColor,
 	Font_s *font, float scale, bool glow);
 void WriteBytes(DWORD addr, const char *bytes, size_t len);

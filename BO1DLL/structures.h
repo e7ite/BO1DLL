@@ -22,6 +22,7 @@ struct vec3_t
 	vec3_t(const vec3_t &vec) { memcpy(this, &vec, 0xC); }
 
 	operator float*() { return (float*)this; }
+	operator const float*() const { return (const float*)this; }
 
 	vec3_t operator+(const vec3_t &vec) const;
 	vec3_t operator+(float vec[3]) const;
@@ -372,9 +373,7 @@ struct clientActive_t
 	char pad02[0x40010];					//0x002858
 	usercmd_s cmds[0x80];					//0x042868
 	int cmdNumber;							//0x044268
-	char pad03[0x15C824];					//0x04426C
-	int useCount;							//0x1A0A90
-}; 
+};  //Size = 0x04426C
 
 struct WeaponDef
 {
@@ -428,7 +427,7 @@ struct WeaponDef
 	int minPlayerDamage;					//0x7A4
 	float fMaxDamageRange;					//0x7A8
 	float fMinDamageRange;					//0x7AC
-};
+}; //Size = 0x7B0
 
 struct WeaponVariantDef
 {
@@ -474,7 +473,7 @@ struct WeaponVariantDef
 	Material *overlayMaterialLowRes;		//0x090
 	Material *dpadIcon;						//0x094
 	int dpadIconRatio;						//0x098
-};
+}; //Size = 0x9C
 
 struct rectDef_s
 {
@@ -484,7 +483,15 @@ struct rectDef_s
 	float h;								//0x0C
 	int horzAlign;							//0x10
 	int vertAlign;							//0x14
-};
+}; // Size = 0x18
+
+struct KeyState
+{
+	int down;								//0x00
+	int repeats;							//0x04
+	const char *binding;					//0x08
+	const char *binding2;					//0x0C
+}; //Size = 0x10
 
 enum FuncAddresses : DWORD
 {
@@ -535,6 +542,8 @@ enum FuncAddresses : DWORD
 	CG_DrawRotatedPic_a						= 0x68FA00,
 	CL_DrawTextWithEffects_a				= 0x5674D0,
 	UI_DrawTextWithGlow_a					= 0x42D970,
+	ScrPlace_ApplyRect_a					= 0x4B11A0,
+	ScrPlace_HiResGetScale_a				= 0x43A090,
 };
 
 namespace Colors
@@ -574,12 +583,13 @@ namespace GameData
 	extern cg_s *cgameGlob;
 	extern clientActive_t *clientActive;
 	extern cgs_t *cgs;
+	extern KeyState *keys;
 	extern Fonts normalFont;
 	extern Fonts smallFont;
 	extern Fonts consoleFont;
 	extern Fonts objectiveFont;
+	extern HWND *hWnd;
 }
-
 using namespace GameData;
 
 extern void(__cdecl *UI_DrawText)(ScreenPlacement *scrPlace,
@@ -639,6 +649,9 @@ extern void(__cdecl *UI_DrawTextWithGlow)(ScreenPlacement *scrPlace,
 	const char *text, int maxChars, Font_s *font, float x, float y,
 	int horzAlign, int vertAlign, float scale, const float *color,
 	int style, const float *glowColor, bool subtitle, bool cinematic);
+extern void(__cdecl *ScrPlace_ApplyRect)(ScreenPlacement *scrPlace,
+	float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+extern float(*ScrPlace_HiResGetScale)();
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
@@ -649,3 +662,5 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 	float *end, float *dir, const float *forwardDir, const float *rightDir,
 	const float *upDir, const float maxRange);
 bool BG_HasPerk(int index, const char *perkName);
+bool Key_IsDown(const char *bind);
+bool IN_IsForegroundWindow();

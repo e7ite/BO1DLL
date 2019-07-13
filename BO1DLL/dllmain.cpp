@@ -11,6 +11,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
 		SetConsoleTitle("BlackOpsDLL");
 		freopen("CONOUT$", "w", stdout);
 
+		std::cout << std::hex << offsetof(centity_s, nextState) << std::endl;
+
 		InsertDetour(&Menu_PaintAll,		Menu_PaintAllDetour);
 		InsertDetour(&CL_CreateNewCommands, CL_CreateNewCommandsDetour);
 		InsertDetour(&CL_WritePacket,		CL_WritePacketDetour);

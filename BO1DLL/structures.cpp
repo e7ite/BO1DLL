@@ -1,11 +1,13 @@
 #include "structures.h"
 
 std::vector<QWORD> GameData::detours;
-UiContext *GameData::dc				   =  (UiContext*)0x3777160;
+UiContext *GameData::dc				   =		(UiContext*)0x3777160;
 ScreenPlacement *GameData::scrPlace	   =  (ScreenPlacement*)0x23C04F0;
-cg_s *GameData::cgameGlob			   = *(cg_s**)0xD55078;
-clientActive_t *GameData::clientActive =  (clientActive_t*)0xE6DB80;
-cgs_t *GameData::cgs				   = *(cgs_t**)0xD55044;
+cg_s *GameData::cgameGlob			   =			*(cg_s**)0xD55078;
+clientActive_t *GameData::clientActive =	(clientActive_t*)0xE6DB80;
+cgs_t *GameData::cgs				   =		   *(cgs_t**)0xD55044;
+KeyState *GameData::keys			   =		  (KeyState*)0xDB497C;
+HWND *GameData::hWnd				   =			 (HWND*)0x39A9904;
 Fonts GameData::normalFont			   = { 1,    "fonts/normalFont" };
 Fonts GameData::smallFont 			   = { 3,     "fonts/smallFont" };
 Fonts GameData::consoleFont  		   = { 5,   "fonts/consoleFont" };
@@ -113,7 +115,11 @@ void(__cdecl *UI_DrawTextWithGlow)(ScreenPlacement *scrPlace,
 = (void(__cdecl*)(ScreenPlacement*, const char*, int, Font_s*, float,
 	float, int, int, float, const float*, int, const float*,
 	bool, bool))UI_DrawTextWithGlow_a;
-
+void(__cdecl *ScrPlace_ApplyRect)(ScreenPlacement *scrPlace,
+	float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
+= (void(__cdecl*)(ScreenPlacement*, float*, float*, float*, float*, int, int))
+	ScrPlace_ApplyRect_a;
+float(*ScrPlace_HiResGetScale)() = (float(*)())ScrPlace_HiResGetScale_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -250,5 +256,21 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 bool BG_HasPerk(int index, const char *perkName)
 {
 	return (*(long long*)cgameGlob->clients[index].perks 
-			& (1i64 << BG_GetPerkIndexForName(perkName))) != 0;
+		& (1i64 << BG_GetPerkIndexForName(perkName)));
+}
+
+bool Key_IsDown(const char *bind)
+{
+	for (__int16 i = 0; i < 256; ++i)
+		if (keys[i].binding)
+			if (!strcmp(keys[i].binding, bind))
+				if (keys[i].down)
+					return true;
+
+	return false;
+}
+
+bool IN_IsForegroundWindow()
+{
+	return GetForegroundWindow() == *hWnd;
 }
