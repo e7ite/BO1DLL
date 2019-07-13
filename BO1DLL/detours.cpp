@@ -75,24 +75,20 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 	static bool built;
 	if (!built)
 		Menu::Build(), built = true;
+	
+	if (IN_IsForegroundWindow())
+		Menu::MonitorKeys();
+	if (Menu::open)
+		Menu::Execute();
 
-	Menu::Execute();
 	RenderESP();
+
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
 }
 
 void CL_CreateNewCommandsDetour(int localClientNum)
 {
-	//usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
-	//	*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
-
-	//if (Aimbot::gotTarget)
-	//{
-	//	ocmd->button_bits[0] |= 0x80000000;
-	//	ccmd->button_bits[0] &= ~0x80000000;
-	//}
 	CL_CreateNewCommands(localClientNum);
-
 }
 
 void CL_WritePacketDetour(int localClientNum)
@@ -102,21 +98,41 @@ void CL_WritePacketDetour(int localClientNum)
 
 	ocmd->serverTime += 2;
 
-	if (ExecuteAimbot())
+	if (Variables::enableAimbot && Aimbot::Execute())
 	{
 		float oldAngle = ShortToAngle(ocmd->angles[1]);
 
-		ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.x);
-		ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.y);
+		switch (Variables::aimType)
+		{
+		case 0:
+			clientActive->viewangles[0] = Aimbot::targetAngles.pitch;
+			clientActive->viewangles[1] = Aimbot::targetAngles.yaw;
+			clientActive->viewangles[2] = Aimbot::targetAngles.roll;
+			break;
+		case 1:
+			ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
+			ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
+			break;
+		case 2:
+			ccmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
+			ccmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
+			break;
+		}
 
-		//SetAngles(Aimbot::targetAngles);
-		RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
+		if (Variables::noSpread)
+			Aimbot::RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
 
-		FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
+		Aimbot::FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
 			(float)ocmd->forwardmove, (float)ocmd->rightmove);
 
-		ocmd->button_bits[0] &= ~0x80000000;
-		ccmd->button_bits[0] |=  0x80000000;
+		if (Variables::autoAim)
+			clientActive->usingAds = true;
+
+		if (Variables::autoShoot)
+		{
+			ocmd->button_bits[0] &= ~0x80000000;
+			ccmd->button_bits[0] |= 0x80000000;
+		}
 	}
 
 	CL_WritePacket(localClientNum);
@@ -134,11 +150,13 @@ void CL_DrawStretchPicDetour(ScreenPlacement *scrPlace, float x,
 void Menu_HandleKeyDetour(int localClientNum, UiContext *dc,
 	struct menuDef_t *menu, int key, unsigned int down)
 {
-	Menu_HandleKey(localClientNum, dc, menu, key, down);
+	if (!Menu::open)
+		Menu_HandleKey(localClientNum, dc, menu, key, down);
 }
 
 void Menu_HandleMouseMoveDetour(int localClientNum, UiContext *dc,
 	struct menuDef_t *menu)
 {
-	Menu_HandleMouseMove(localClientNum, dc, menu);
+	if (!Menu::open)
+		Menu_HandleMouseMove(localClientNum, dc, menu);
 }
