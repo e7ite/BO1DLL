@@ -36,17 +36,17 @@ void ScaleWeapon(WeaponVariantDef *weap, rectDef_s *rect)
 	if (weap->weapDef->hudIconRatio)
 		if (weap->weapDef->hudIconRatio == 1)
 		{
-			rect->x = rect->x - rect->w;
-			rect->w = rect->w * 2.0f;
+			rect->x -= rect->w;
+			rect->w *= 2.0f;
 		}
 		else
 		{
-			rect->x = rect->x - rect->w * 3.0f;
-			rect->w = rect->w * 4.0f;
+			rect->x -= rect->w * 3.0f;
+			rect->w *= 4.0f;
 		}
 }
 
-void DrawEntityESP(centity_s *cent)
+void DrawEntityESP(centity_s *cent, rectDef_s *mapRect)
 {
 	WeaponVariantDef *weap = BG_GetWeaponVariantDef(
 		cent->nextState.eType == 3
@@ -59,32 +59,47 @@ void DrawEntityESP(centity_s *cent)
 
 	float origin[2];
 	WorldPosToScreenPos(0, cent->pose.origin, origin);
-
-	if (Variables::scavengerESP
+	rectDef_s rect = { origin[0], origin[1], 30, 30, 0, 0 };
+	
+	bool scavenger = Variables::scavengerESP
 		&& BG_HasPerk(cgameGlob->clientNum, "specialty_scavenger")
-		&& !strcmp(weap->szInternalName, "scavenger_item_mp"))
+		&& !strcmp(weap->szInternalName, "scavenger_item_mp");
+
+	struct Material *material;
+	if (scavenger)
 	{
+		material = Material_RegisterHandle("perk_scavenger", 0);
+
 		CG_DrawRotatedPicPhysical(scrPlace, origin[0], origin[1],
-			30, 30, 0, Colors::white,
-			Material_RegisterHandle("perk_scavenger", 0));
+			rect.w, rect.h, 0, Colors::white,
+			material);
 	}
 	else
 	{
-		if (!weap->weapDef->hudIcon 
+		if (!weap->weapDef->hudIcon
 			|| (cent->nextState.eType == 3 && !Variables::pickupESP)
 			|| (cent->nextState.eType == 4 && !Variables::missileESP))
 			return;
 
-		rectDef_s rect = { origin[0], origin[1], 30, 30, 0, 0 };
+		material = weap->weapDef->hudIcon;
 		ScaleWeapon(weap, &rect);
+
 		if (weap)
 			CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
 				rect.w, rect.h, 0, Colors::white,
-				weap->weapDef->hudIcon);
+				material);
 	}
+
+	CalcCompassFriendlySize(0, &rect.w, &rect.h);
+	WorldPosToCompass(cent, mapRect, &rect);
+	if (!scavenger)
+		ScaleWeapon(weap, &rect);
+
+	UI_DrawHandlePic(scrPlace, rect.x, rect.y, rect.w, rect.h,
+		0, 0, Colors::white, material);
 }
 
-void DrawPlayerESP(centity_s *cent)
+void DrawPlayerESP(centity_s *cent, rectDef_s *mapRect)
 {
 	if (!Variables::friendlyESP && !Variables::enemyESP)
 		return;
@@ -111,27 +126,48 @@ void DrawPlayerESP(centity_s *cent)
 
 	DrawName(cent, headScreen, Colors::white);
 	DrawBorderBox(headScreen, feetScreen, color);
+
+	WeaponVariantDef *weap = BG_GetWeaponVariantDef(cent->nextState.weapon);
+
+	rectDef_s rect = { feetScreen[0], feetScreen[1], 20, 20, 0, 0 };
+	ScaleWeapon(weap, &rect);
+
+	CG_DrawRotatedPicPhysical(scrPlace, rect.x - rect.w / 2,
+		rect.y, rect.w, rect.h, 0, Colors::white,
+		weap->weapDef->hudIcon);
+
+	CalcCompassFriendlySize(0, &rect.w, &rect.h);
+	WorldPosToCompass(cent, mapRect, &rect);
+
+	UI_DrawHandlePic(scrPlace, rect.x, rect.y, rect.w, rect.h, 0, 0, Colors::white,
+		Material_RegisterHandle("compassping_player", 0));
 }
 
 void RenderESP()
 {
 	if (InGame())
 	{
-		vec3_t head, foot;
-		float headScreen[2], feetScreen[2];
-		float closest = static_cast<float>(INT_MAX);
+		rectDef_s rect =
+		{
+			dc->screenDimensions[0] / 2 / scrPlace->scaleVirtualToFull[0],
+			dc->screenDimensions[1] / 2 / scrPlace->scaleVirtualToFull[1],
+			100, 100, 0, 0
+		};
+
+		CG_CompassDrawPlayerMap(0, 0, &rect, &rect,
+			cgameGlob->compassMapMaterial, Colors::white, 0);
 
 		for (__int32 i = 0; i < 1024; ++i)
 		{
 			centity_s *cent = CG_GetEntity(0, i);
 
-			if (!(cent->alive & 2))
+			if (!(cent->alive & 2)) 
 				continue;
 
 			if (Aimbot::ValidateTarget(cent))
-				DrawPlayerESP(cent);
+				DrawPlayerESP(cent, &rect);
 			else if (cent->nextState.eType == 3 || cent->nextState.eType == 4)
-				DrawEntityESP(cent);
+				DrawEntityESP(cent, &rect);
 		}
 	}
 }

@@ -13,6 +13,17 @@ Fonts GameData::smallFont 			   = { 3,     "fonts/smallFont" };
 Fonts GameData::consoleFont  		   = { 5,   "fonts/consoleFont" };
 Fonts GameData::objectiveFont   	   = { 6, "fonts/objectiveFont" };
 
+const unsigned char GameData::prevOps[0x17] =
+{
+	0xF6, 0x05, 0x38, 0xDA, 0xE6, 0x00, 0x10, // test byte ptr clUI[1], 10h
+	0x74, 0x25,								  // jz short 68023Eh	 
+	0x6A, 0x00,								  // push 0
+	0xE8, 0x30, 0x33, 0xE7, 0xFF,			  // call UI_KeysBypassMenu
+	0x83, 0xC4, 0x04,						  // add esp, 4
+	0x84, 0xC0,								  // test al, al
+	0x75, 0x17								  // jnz short 68023Eh
+};
+
 Colors::Color Colors::white			   = { 255, 255, 255, 255 };
 Colors::Color Colors::black			   = {   0,   0,   0, 255 };
 Colors::Color Colors::red			   = { 255,   0,   0, 255 };
@@ -120,6 +131,37 @@ void(__cdecl *ScrPlace_ApplyRect)(ScreenPlacement *scrPlace,
 = (void(__cdecl*)(ScreenPlacement*, float*, float*, float*, float*, int, int))
 	ScrPlace_ApplyRect_a;
 float(*ScrPlace_HiResGetScale)() = (float(*)())ScrPlace_HiResGetScale_a;
+void(__cdecl *Menus_HideByName)(UiContext *dc, const char *menuName)
+= (void(__cdecl*)(UiContext*, const char*))Menus_HideByName_a;
+struct menuDef_t*(__cdecl *Menus_FindByName)(UiContext *dc, int hashName)
+= (menuDef_t*(__cdecl*)(UiContext*, int))Menus_FindByName_a;
+int(__cdecl *Com_HashString)(const char *fname, int len)
+= (int(__cdecl*)(const char*, int))Com_HashString_a;
+void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float y,
+	float w, float h, int horzAlign, int vertAlign, const float *color,
+	Material *material)
+= (void(__cdecl*)(ScreenPlacement*, float, float, float, float, int, int,
+	const float*, Material*))UI_DrawHandlePic_a;
+void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
+	rectDef_s *parentRect, rectDef_s *rect, struct Material *material,
+	const float *color, bool grid)
+= (void(__cdecl*)(int, int, rectDef_s*, rectDef_s*, Material*, const float*,
+	bool))CG_CompassDrawPlayerMap_a;
+bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
+	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
+	float *in, float *out, float *outClipped)
+= (bool(__cdecl*)(int, cg_s*, rectDef_s*, const float*, const float*,
+	float*, float*, float*))CG_WorldPosToCompass_a;
+void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result)
+= (void(__cdecl*)(cg_s*, float*))CG_CompassUpYawVector_a;
+void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
+	float *h)
+= (void(__cdecl*)(int, float*, float*))CalcCompassFriendlySize_a;	
+void(__cdecl *CG_CompassCalcDimensions)(int compassType,
+	cg_s *cgameGlob, rectDef_s *parentRect, rectDef_s *rect,
+	float *x, float *y, float *w, float *h)
+= (void(__cdecl*)(int, cg_s*, rectDef_s*, rectDef_s*,
+	float*, float*, float*, float*))CG_CompassCalcDimensions_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -139,6 +181,16 @@ vec3_t vec3_t::operator-(const vec3_t &vec) const
 vec3_t vec3_t::operator-(float vec[3]) const
 {
 	return vec3_t(this->x - vec[0], this->y - vec[1], this->z - vec[2]);
+}
+
+vec3_t vec3_t::operator*(const vec3_t &vec) const
+{
+	return vec3_t(this->x * vec.x, this->y * vec.y, this->z * vec.z);
+}
+
+vec3_t vec3_t::operator*(float vec[3]) const
+{
+	return vec3_t(this->x * vec[0], this->y * vec[1], this->z * vec[2]);
 }
 
 vec3_t& vec3_t::operator+=(const vec3_t &vec)
@@ -173,6 +225,24 @@ vec3_t& vec3_t::operator-=(float vec[3])
 	this->x -= vec[0];
 	this->y -= vec[1];
 	this->z -= vec[2];
+
+	return *this;
+}
+
+vec3_t& vec3_t::operator*=(const vec3_t &vec)
+{
+	this->x *= vec.x;
+	this->y *= vec.y;
+	this->z *= vec.z;
+
+	return *this;
+}
+
+vec3_t& vec3_t::operator*=(float vec[3])
+{
+	this->x *= vec[0];
+	this->y *= vec[1];
+	this->z *= vec[2];
 
 	return *this;
 }
@@ -273,4 +343,22 @@ bool Key_IsDown(const char *bind)
 bool IN_IsForegroundWindow()
 {
 	return GetForegroundWindow() == *hWnd;
+}
+
+bool WorldPosToCompass(centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect)
+{
+	bool clipped;
+	float yawVector[2];
+
+	CG_CompassUpYawVector(cgameGlob, yawVector);
+	clipped = CG_WorldPosToCompass(0, cgameGlob, mapRect, yawVector,
+		cgameGlob->refdef.vieworg, cent->pose.origin, 0, &itemRect->x);
+
+	float centerX = mapRect->w * 0.5 + mapRect->x;
+	float centerY = mapRect->h * 0.5 + mapRect->y;
+
+	itemRect->x += centerX - itemRect->w * 0.5;
+	itemRect->y += centerY - itemRect->h * 0.5;
+
+	return clipped;
 }

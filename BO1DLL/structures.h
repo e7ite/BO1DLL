@@ -7,6 +7,7 @@
 #include <functional>
 #include <detours.h>
 #include <sstream>
+#pragma pack(push, 1)
 
 struct vec3_t
 {
@@ -28,10 +29,14 @@ struct vec3_t
 	vec3_t operator+(float vec[3]) const;
 	vec3_t operator-(const vec3_t &vec) const;
 	vec3_t operator-(float vec[3]) const;
+	vec3_t operator*(const vec3_t &vec) const;
+	vec3_t operator*(float vec[3]) const;
 	vec3_t& operator+=(const vec3_t &vec);
 	vec3_t& operator+=(float vec[3]);
 	vec3_t& operator-=(const vec3_t &vec);
 	vec3_t& operator-=(float vec[3]);
+	vec3_t& operator*=(const vec3_t &vec);
+	vec3_t& operator*=(float vec[3]);
 };
 
 struct UiContext
@@ -154,7 +159,9 @@ struct playerState_s
 	float weaponSpinLerp;					//0x0178
 	int viewmodelIndex;						//0x017C
 	float viewangles[3];					//0x0180
-	char pad05[0x255C];						//0x018C
+	char pad05[0x3D4];						//0x018C
+	float aimSpreadScale;					//0x0560
+	char pad06[0x2184];						//0x0564
 }; //Size = 0x26E8
 
 struct cpose_t
@@ -171,15 +178,17 @@ struct cpose_t
 
 struct LerpEntityState
 {
-	int eFlags;								//0x000
-	int eFlags2;							//0x004
-}; 
+	int eFlags;								//0x00
+	int eFlags2;							//0x04
+	char pad00[0x6C];						//0x08
+}; //Size = 0x74 
 
 struct entityState_s
 {
 	int number;								//0x00
 	LerpEntityState lerp;					//0x04
-	char pad00[0x74];						//0x0C
+	int time2;								//0x78
+	unsigned int loopSoundId;				//0x7C
 	int solid;								//0x80
 	int renderOptions;						//0x84
 	char pad01[0x10];						//0x88
@@ -204,7 +213,7 @@ struct centity_s
 {
 	cpose_t pose;							//0x000
 	LerpEntityState lerp;					//0x060
-	char pad00[0x180];						//0x068
+	char pad00[0x114];						//0x0D4
 	entityState_s nextState;				//0x1E8
 	short previousEventSequence;			//0x2C8
 	char pad01[0x5A];						//0x2CA
@@ -270,13 +279,25 @@ struct clientInfo_t
 	char pad04[0x174];						//0x45C
 }; //Size = 0x5D0
 
+struct snapshot_s
+{
+	int snapFlags;							//0x00000
+	int ping;								//0x00004
+	int serverTime;							//0x00008
+	int physicsTime;						//0x0000C
+	playerState_s ps;						//0x00010
+	int numEntities;						//0x026F8
+	int numClients;							//0x026FC
+	entityState_s entities[512];			//0x02700
+};
+
 struct cg_s
 {
 	int clientNum;							//0x000000
 	int localClientNum;						//0x000004
 	char pad00[0x20];						//0x000008
-	struct snapshot_s *snap;				//0x000028
-	struct snapshot_s *nextSnap;			//0x00002C
+	snapshot_s *snap;						//0x000028
+	snapshot_s *nextSnap;					//0x00002C
 	char pad01[0x40658];					//0x000030
 	int time;								//0x040688
 	int oldTime;							//0x04068C
@@ -291,7 +312,9 @@ struct cg_s
 	char pad04[0x140];						//0x05EE54	
 	float gunPitch;							//0x05EF94
 	float gunYaw;							//0x05EF98
-	char pad05[0x5C];						//0x05EF9C
+	char pad05[0x50];						//0x05EF9C
+	float compassNorthYaw;					//0x05EFEC
+	float compassNorth[2];					//0x05EFF0
 	struct Material *compassMapMaterial;	//0x05EFF8
 	float compassMapUpperLeft[2];			//0x05EFFC
 	float compassMapWorldSize[2];			//0x05F004
@@ -544,6 +567,12 @@ enum FuncAddresses : DWORD
 	UI_DrawTextWithGlow_a					= 0x42D970,
 	ScrPlace_ApplyRect_a					= 0x4B11A0,
 	ScrPlace_HiResGetScale_a				= 0x43A090,
+	Menus_ShowByName_a						= 0x5C29C0,
+	Menus_HideByName_a						= 0x4EFE90,
+	Menus_FindByName_a						= 0x4C3440,
+	Com_HashString_a						= 0x6ABFC0,
+	UI_DrawHandlePic_a						= 0x42E6C0,
+	CalcCompassFriendlySize_a				= 0x634620,
 };
 
 namespace Colors
@@ -574,6 +603,7 @@ struct Fonts
 };
 
 using QWORD = unsigned long long;
+using __usercall = void*;
 
 namespace GameData
 {
@@ -589,6 +619,7 @@ namespace GameData
 	extern Fonts consoleFont;
 	extern Fonts objectiveFont;
 	extern HWND *hWnd;
+	extern const unsigned char prevOps[0x17];
 }
 using namespace GameData;
 
@@ -598,11 +629,11 @@ extern void(__cdecl *UI_DrawText)(ScreenPlacement *scrPlace,
 extern bool(__cdecl *WorldPosToScreenPos)(int localClientNum, const float *worldPos,
 	float *outScreenPos);
 extern centity_s*(__cdecl *CG_GetEntity)(int localClientNum, int entityIndex);
-extern Font_s*(__cdecl* CL_RegisterFont)(const char *name, int imageTrack);
+extern Font_s*(__cdecl *CL_RegisterFont)(const char *name, int imageTrack);
 extern void(__cdecl *UI_FillRect)(ScreenPlacement *scrPlace, float x, float y,
 	float width, float height, int horzAlign, int vertAlign, const float *color);
 extern void(__cdecl *UI_DrawRect)(ScreenPlacement *scrPlace, float x, float y,
-	float width, float height, int horzAlign, int vertAlign,
+	float width, float height, int horzAlign, int vertAlign, 
 	float size, const float *color);
 extern struct Material*(__cdecl *Material_RegisterHandle)(const char *name, 
 	int imageTrack);
@@ -652,6 +683,25 @@ extern void(__cdecl *UI_DrawTextWithGlow)(ScreenPlacement *scrPlace,
 extern void(__cdecl *ScrPlace_ApplyRect)(ScreenPlacement *scrPlace,
 	float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
 extern float(*ScrPlace_HiResGetScale)();
+extern void(__cdecl *Menus_HideByName)(UiContext *dc, const char *menuName);
+extern struct menuDef_t*(__cdecl *Menus_FindByName)(UiContext *dc, 
+	int hash);
+extern int(__cdecl *Com_HashString)(const char *fname, int len);
+extern void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float y,
+	float w, float h, int horzAlign, int vertAlign, const float *color,
+	struct Material *material);
+extern void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
+	rectDef_s *parentRect, rectDef_s *rect, struct Material *material,
+	const float *color, bool grid);
+extern bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
+	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
+	float *in, float *out, float *outClipped);
+extern void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result);
+extern void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
+	float *h);
+extern void(__cdecl *CG_CompassCalcDimensions)(int compassType,
+	cg_s *cgameGlob, rectDef_s *parentRect, rectDef_s *rect,
+	float *x, float *y, float *w, float *h);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
@@ -664,3 +714,6 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 bool BG_HasPerk(int index, const char *perkName);
 bool Key_IsDown(const char *bind);
 bool IN_IsForegroundWindow();
+bool WorldPosToCompass(centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect);
+
+#pragma pack(pop)

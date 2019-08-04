@@ -18,6 +18,11 @@ void(__cdecl *Menu_HandleKey)(int localClientNum, UiContext *dc,
 void(__cdecl *Menu_HandleMouseMove)(int localClientNum, UiContext *dc,
 	struct menuDef_t *menu)
 = (void(__cdecl*)(int, UiContext*, menuDef_t*))Menu_HandleMouseMove_a;
+void(__cdecl *Menus_ShowByName)(UiContext *dc, const char *windowName)
+= (void(__cdecl*)(UiContext*, const char*))Menus_ShowByName_a;
+__usercall CL_MouseMove = (__usercall)CL_MouseMove_a;
+bool(__cdecl *UI_KeysBypassMenu)(int localClientNum)
+= (bool(__cdecl*)(int))UI_KeysBypassMenu_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -71,16 +76,40 @@ void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 {
 	Menu_PaintAll(localClientNum, dc);
-
+	
 	static bool built;
 	if (!built)
 		Menu::Build(), built = true;
-	
+
 	if (IN_IsForegroundWindow())
 		Menu::MonitorKeys();
+
 	if (Menu::open)
+	{
+		char nopSled[0x17];
+		memset(nopSled, 0x90, 0x17);
+		WriteBytes(0x680210, nopSled, 0x17);
+		
 		Menu::Execute();
 
+		if (!(*(char*)0xE6DA38 & 0x10) && *(int*)0x3779330 != 7)
+			UI_DrawHandlePic(
+				scrPlace,
+				GameData::dc->cursorPos[0]
+				- ((32.0f * scrPlace->scaleVirtualToReal[0])
+					/ scrPlace->scaleVirtualToFull[0]) * 0.5f,
+				GameData::dc->cursorPos[1]
+				- ((32.0f * scrPlace->scaleVirtualToReal[1])
+					/ scrPlace->scaleVirtualToFull[1]) * 0.5f,
+				32.0f * scrPlace->scaleVirtualToReal[0] 
+					/ scrPlace->scaleVirtualToFull[0],
+				32.0f * scrPlace->scaleVirtualToReal[1]
+					/ scrPlace->scaleVirtualToFull[1],
+				4, 4, Colors::white, (Material*)0x26536E8);
+	}
+	else
+		WriteBytes(0x680210, (const char*)prevOps, 0x17);
+	
 	RenderESP();
 
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
@@ -96,43 +125,58 @@ void CL_WritePacketDetour(int localClientNum)
 	usercmd_s *ccmd = &clientActive->cmds[clientActive->cmdNumber & 0x7F],
 		*ocmd = &clientActive->cmds[clientActive->cmdNumber - 1 & 0x7F];
 
+	Variables::enableAimbot = true;
+	Variables::autoShoot = true;
+	Variables::noRecoil = true;
+	Variables::noSpread = true;
+	Variables::enemyESP = true;
+	Variables::friendlyESP = true;
+	Variables::scavengerESP = true;
+	Variables::missileESP = true;
+	Variables::pickupESP = true;
+
 	ocmd->serverTime += 2;
 
-	if (Variables::enableAimbot && Aimbot::Execute())
+	if (Variables::enableAimbot)
 	{
-		float oldAngle = ShortToAngle(ocmd->angles[1]);
-
-		switch (Variables::aimType)
+		if (Aimbot::Execute())
 		{
-		case 0:
-			clientActive->viewangles[0] = Aimbot::targetAngles.pitch;
-			clientActive->viewangles[1] = Aimbot::targetAngles.yaw;
-			clientActive->viewangles[2] = Aimbot::targetAngles.roll;
-			break;
-		case 1:
-			ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
-			ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
-			break;
-		case 2:
-			ccmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
-			ccmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
-			break;
+			float oldAngle = ShortToAngle(ocmd->angles[1]);
+
+			switch (Variables::aimType)
+			{
+			case 0:
+				clientActive->viewangles[0] = Aimbot::targetAngles.pitch;
+				clientActive->viewangles[1] = Aimbot::targetAngles.yaw;
+				clientActive->viewangles[2] = Aimbot::targetAngles.roll;
+				break;
+			case 1:
+				ocmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
+				ocmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
+				break;
+			case 2:
+				ccmd->angles[0] = AngleToShort(Aimbot::targetAngles.pitch);
+				ccmd->angles[1] = AngleToShort(Aimbot::targetAngles.yaw);
+				break;
+			}
+
+			if (Variables::noSpread)
+				Aimbot::RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
+
+			Aimbot::FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
+				(float)ocmd->forwardmove, (float)ocmd->rightmove);
+
+			if (Variables::autoAim)
+				clientActive->usingAds = true;
+
+			if (Variables::autoShoot)
+			{
+				ocmd->button_bits[0] &= ~0x80000000;
+				ccmd->button_bits[0] |=  0x80000000;
+			}
 		}
-
-		if (Variables::noSpread)
-			Aimbot::RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
-
-		Aimbot::FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
-			(float)ocmd->forwardmove, (float)ocmd->rightmove);
-
-		if (Variables::autoAim)
-			clientActive->usingAds = true;
-
-		if (Variables::autoShoot)
-		{
-			ocmd->button_bits[0] &= ~0x80000000;
-			ccmd->button_bits[0] |= 0x80000000;
-		}
+		else
+			clientActive->usingAds = false;
 	}
 
 	CL_WritePacket(localClientNum);
@@ -159,4 +203,37 @@ void Menu_HandleMouseMoveDetour(int localClientNum, UiContext *dc,
 {
 	if (!Menu::open)
 		Menu_HandleMouseMove(localClientNum, dc, menu);
+}
+
+void Menus_ShowByNameDetour(UiContext *dc, const char *windowName)
+{
+	if (strcmp(windowName, "Compass"))
+		return Menus_ShowByName(dc, windowName);
+}
+
+DWORD CL_MouseMoveRet = CL_MouseMoveRet_a;
+void __declspec(naked) CL_MouseMoveStub(int localClientNum, usercmd_s *cmd)
+{
+	__asm
+	{
+		push		edi
+		push		localClientNum
+		call		CL_MouseMoveDetour
+		pop			edi
+		pop			edi
+		test		al, al
+		jnz			CONTINUE_FLOW
+		pop			ecx
+		jmp			ecx
+CONTINUE_FLOW:
+		sub			esp, 58h
+		mov			ecx, 00E703D0h
+		movss		xmm0, [ecx]
+		jmp			CL_MouseMoveRet
+	}
+}
+
+bool CL_MouseMoveDetour(int localClientNum, usercmd_s *cmd)
+{
+	return !Menu::open;
 }

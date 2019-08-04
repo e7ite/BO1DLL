@@ -142,7 +142,8 @@ void Menu::Execute()
 		Colors::blue);
 
 	float optionX = borderX + 4, 
-		optionH = (float)UI_TextHeight(fontPointer, 0.3f);
+		optionH = (float)UI_TextHeight(fontPointer, 0.3f); 
+
 	for (const auto &i : options[currentSub])
 	{
 		Colors::Color color = Colors::white;
@@ -246,8 +247,7 @@ void DrawEmptyRect(float x, float y, float width, float height, float size,
 }
 
 float AlignText(const char *text, const Fonts &font, float scale, float initX,
-	ScreenAlignment align, bool ui, bool bg, Font_s **fOut,
-	float *wOut, float *hOut)
+	ScreenAlignment align, bool ui, bool bg, Font_s **fOut, float *wOut, float *hOut)
 {
 	Font_s *fontPointer;
 	float width, height;
@@ -360,5 +360,15 @@ void WriteBytes(DWORD addr, const char *bytes, size_t len)
 
 	WriteProcessMemory(GetCurrentProcess(), (LPVOID)addr, bytes, len, 0);
 
-	VirtualProtect((LPVOID)addr, len, curProtection, nullptr);
+	VirtualProtect((LPVOID)addr, len, curProtection, 0);
+}
+
+void ReadBytes(DWORD addr, char *buf, size_t len)
+{
+	DWORD curProtection;
+	VirtualProtect((LPVOID)addr, len, PAGE_EXECUTE_READWRITE, &curProtection);
+
+	ReadProcessMemory(GetCurrentProcess(), (LPCVOID)addr, buf, len, 0);
+
+	VirtualProtect((LPVOID)addr, len, curProtection, 0);
 }

@@ -1,22 +1,22 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\documents\visual studio 2017\projects\bo1dll\debug\bo1dll.dll' is denied.
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\documents\visual studio 2017\projects\bo1dll\debug\bo1dll.dll' is denied.
   
   
-  Library BO1DLL.dll Loaded 12:54:58
+  Library BO1DLL.dll Loaded 10:52:23
   
   
-cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+  cl : Command line warning D9025 : overriding '/sdl-' with '/GS-'
   aimbot.cpp
   detours.cpp
   dllmain.cpp
   esp.cpp
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(121): warning C4101: 'headScreen': unreferenced local variable
-d:\documents\visual studio 2017\projects\bo1dll\bo1dll\esp.cpp(121): warning C4101: 'feetScreen': unreferenced local variable
   menu.cpp
   structures.cpp
+D:\Documents\Visual Studio 2017\Projects\BO1DLL\BO1DLL\structures.cpp(357,68): warning C4244:  '+=': conversion from 'double' to 'float', possible loss of data
   Generating Code...
+D:\Documents\Visual Studio 2017\Projects\BO1DLL\BO1DLL\structures.cpp(358,68): warning C4244:  '+=': conversion from 'double' to 'float', possible loss of data
   BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 12:55:05
+  Library BO1DLL.dll Loaded 10:52:29
   
   
