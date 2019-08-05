@@ -127,6 +127,7 @@ void CL_WritePacketDetour(int localClientNum)
 
 	Variables::enableAimbot = true;
 	Variables::autoShoot = true;
+	Variables::aimType = 1;
 	Variables::noRecoil = true;
 	Variables::noSpread = true;
 	Variables::enemyESP = true;

@@ -307,24 +307,26 @@ struct cg_s
 	playerState_s predictedPlayerState;		//0x04069C
 	char pad02[0x37C];						//0x042D84
 	refdef_s refdef;						//0x043100
-	char pad03[0x1BCEC];					//0x043164
+	char pad03[0x184BC];					//0x043164
+	float refdefViewAngles[3];				//0x05B620
+	char pad04[0x3824];						//0x05B62C
 	int weaponSelect;						//0x05EE50
-	char pad04[0x140];						//0x05EE54	
+	char pad05[0x140];						//0x05EE54	
 	float gunPitch;							//0x05EF94
 	float gunYaw;							//0x05EF98
-	char pad05[0x50];						//0x05EF9C
+	char pad06[0x50];						//0x05EF9C
 	float compassNorthYaw;					//0x05EFEC
 	float compassNorth[2];					//0x05EFF0
 	struct Material *compassMapMaterial;	//0x05EFF8
 	float compassMapUpperLeft[2];			//0x05EFFC
 	float compassMapWorldSize[2];			//0x05F004
-	char pad06[0x40];						//0x05F00C
+	char pad07[0x40];						//0x05F00C
 	float zoomSensitivity;					//0x05F04C
-	char pad07[0x88];						//0x05F050
+	char pad08[0x88];						//0x05F050
 	int	inKillCam;							//0x05F0D8
-	char pad08[0x15C];						//0x05F0DC
+	char pad09[0x15C];						//0x05F0DC
 	clientInfo_t clients[0x12];				//0x05F238
-	char pad09[0xA038];						//0x065AD8
+	char pad10[0xA038];						//0x065AD8
 	float aimSpreadScale;					//0x06FB10
 }; 
 
@@ -573,6 +575,7 @@ enum FuncAddresses : DWORD
 	Com_HashString_a						= 0x6ABFC0,
 	UI_DrawHandlePic_a						= 0x42E6C0,
 	CalcCompassFriendlySize_a				= 0x634620,
+	AngleNormalize360_a						= 0x43E060,
 };
 
 namespace Colors
@@ -695,13 +698,21 @@ extern void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassTyp
 	const float *color, bool grid);
 extern bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
 	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
-	float *in, float *out, float *outClipped);
+	const float *in, float *out, float *outClipped);
 extern void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result);
 extern void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
 	float *h);
 extern void(__cdecl *CG_CompassCalcDimensions)(int compassType,
 	cg_s *cgameGlob, rectDef_s *parentRect, rectDef_s *rect,
 	float *x, float *y, float *w, float *h);
+extern float(__cdecl *AngleNormalize360)(const float angle);
+extern void(__cdecl *CG_CompassDrawVehicles)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect, const float *color);
+extern void(__cdecl *CG_CompassDrawHelicopter)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect, const float *color);
+extern void(__cdecl *CG_CompassDrawPlayer)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
+	const float *color);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
@@ -714,6 +725,6 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 bool BG_HasPerk(int index, const char *perkName);
 bool Key_IsDown(const char *bind);
 bool IN_IsForegroundWindow();
-bool WorldPosToCompass(centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect);
+bool WorldPosToCompass(const centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect);
 
 #pragma pack(pop)

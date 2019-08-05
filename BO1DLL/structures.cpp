@@ -149,9 +149,9 @@ void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
 	bool))CG_CompassDrawPlayerMap_a;
 bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
 	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
-	float *in, float *out, float *outClipped)
+	const float *in, float *out, float *outClipped)
 = (bool(__cdecl*)(int, cg_s*, rectDef_s*, const float*, const float*,
-	float*, float*, float*))CG_WorldPosToCompass_a;
+	const float*, float*, float*))CG_WorldPosToCompass_a;
 void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result)
 = (void(__cdecl*)(cg_s*, float*))CG_CompassUpYawVector_a;
 void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
@@ -162,6 +162,21 @@ void(__cdecl *CG_CompassCalcDimensions)(int compassType,
 	float *x, float *y, float *w, float *h)
 = (void(__cdecl*)(int, cg_s*, rectDef_s*, rectDef_s*,
 	float*, float*, float*, float*))CG_CompassCalcDimensions_a;
+float(__cdecl *AngleNormalize360)(const float angle)
+= (float(__cdecl*)(const float))AngleNormalize360_a;
+void(__cdecl *CG_CompassDrawVehicles)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect, const float *color)
+= (void(__cdecl*)(int, int, int, const rectDef_s*,
+	const rectDef_s*, const float*))CG_CompassDrawVehicles_a;
+void(__cdecl *CG_CompassDrawHelicopter)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect, const float *color)
+= (void(__cdecl*)(int, int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawHelicopter_a;
+void(__cdecl *CG_CompassDrawPlayer)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, Material *material,
+	const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*,
+	const float*))CG_CompassDrawPlayer_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -253,8 +268,8 @@ bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos)
 	if (!obj)
 		return false;
 	
-	if (!CG_DObjGetLocalTagMatrix(&cent->pose, obj, SL_FindString(tagname, 0),
-		pos))
+	if (!CG_DObjGetLocalTagMatrix(&cent->pose, obj, 
+		SL_FindString(tagname, 0), pos))
 		return false;
 
 	return true;
@@ -262,8 +277,8 @@ bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos)
 
 bool AimTarget_IsTargetVisible(centity_s *targetEnt, const char *visbone)
 {
-	unsigned short bone = SL_FindString(visbone, 0);
 	DWORD addr = AimTarget_IsTargetVisible_a;
+	unsigned short bone = SL_FindString(visbone, 0);
 
 	__asm
 	{
@@ -345,7 +360,7 @@ bool IN_IsForegroundWindow()
 	return GetForegroundWindow() == *hWnd;
 }
 
-bool WorldPosToCompass(centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect)
+bool WorldPosToCompass(const centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect)
 {
 	bool clipped;
 	float yawVector[2];
