@@ -18,7 +18,7 @@ void DrawBorderBox(float head[2], float foot[2], const float *color)
 		boxHeight, 0, color, Material_RegisterHandle("white", 0)); //right
 }
 
-void DrawName(centity_s *cent, float head[2],const float *color)
+void DrawName(centity_s *cent, float head[2], const float *color)
 {
 	float namePos[2];
 	Font_s *fontPointer = CL_RegisterFont(normalFont.dir, 0);
@@ -46,7 +46,8 @@ void ScaleWeapon(WeaponVariantDef *weap, rectDef_s *rect)
 		}
 }
 
-void DrawEntityESP(centity_s *cent, rectDef_s *mapRect)
+void DrawEntityESP(centity_s *cent, int compassType, const rectDef_s *parentRect,
+	const rectDef_s *mapRect)
 {
 	WeaponVariantDef *weap = BG_GetWeaponVariantDef(
 		cent->nextState.eType == 3
@@ -94,13 +95,14 @@ void DrawEntityESP(centity_s *cent, rectDef_s *mapRect)
 	if (!scavenger)
 		ScaleWeapon(weap, &rect);
 
-	WorldPosToCompass(cent, mapRect, &rect);
+	WorldPosToCompass(cent, compassType, mapRect, &rect);
 
 	UI_DrawHandlePic(scrPlace, rect.x, rect.y, rect.w, rect.h,
 		0, 0, Colors::white, material);
 }
 
-void DrawPlayerESP(centity_s *cent, rectDef_s *mapRect)
+void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect, 
+	const rectDef_s *mapRect)
 {
 	if (!Variables::friendlyESP && !Variables::enemyESP)
 		return;
@@ -138,45 +140,49 @@ void DrawPlayerESP(centity_s *cent, rectDef_s *mapRect)
 		weap->weapDef->hudIcon);
 
 	CalcCompassFriendlySize(0, &rect.w, &rect.h);
-	WorldPosToCompass(cent, mapRect, &rect);
+
+	WorldPosToCompass(cent, compassType, mapRect, &rect);
+
+	float angle;
+	if (!compassType)
+		angle = AngleNormalize360(cgameGlob->refdefViewAngles[1] -
+			cent->pose.angles[1]);
+	else
+		angle = AngleNormalize360(cgameGlob->compassNorthYaw -
+			cent->pose.angles[1]);
 
 	CG_DrawRotatedPic(scrPlace, rect.x, rect.y, rect.w, rect.h, 0, 0,
-		AngleNormalize360(cgameGlob->refdefViewAngles[1] - 
-		cent->pose.angles[1]),
-		color, Material_RegisterHandle("compassping_player", 0));
+		angle, color, Material_RegisterHandle("compassping_player", 0));
 }
 
-void RenderESP()
+void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *rect)
 {
 	if (InGame())
 	{
-		rectDef_s rect =
+		CG_CompassDrawPlayerMap(0, compassType, parentRect, rect,
+			cgameGlob->compassMapMaterial, Colors::white, 0);
+
+		for (__int32 i = 1023; i >= 0; --i)
 		{
-			dc->screenDimensions[0] / 2 / scrPlace->scaleVirtualToFull[0],
-			dc->screenDimensions[1] / 2 / scrPlace->scaleVirtualToFull[1],
-			100, 100, 0, 0
-		};
-		rectDef_s parentRect = { 0, 0, 0x44200000, 0x43F00000, 0, 0 };
-
-		CG_CompassDrawPlayerMap(0, 0, &parentRect, &rect,
-			cgameGlob->compassMapMaterial, Colors::white, 1);
-		CG_CompassDrawVehicles(0, 0, 14, &rect, &rect, Colors::white);
-		CG_CompassDrawVehicles(0, 0, 13, &rect, &rect, Colors::white);
-		CG_CompassDrawHelicopter(0, 0, 12, &rect, &rect, Colors::white);
-		CG_CompassDrawPlayer(0, 0, &rect, &rect, 
-			Material_RegisterHandle("compassping_player", 0), Colors::white);
-
-		for (__int32 i = 0; i < 1024; ++i)
-		{w
 			centity_s *cent = CG_GetEntity(0, i);
 			
 			if (!(cent->alive & 2)) 
 				continue;
 
 			if (Aimbot::ValidateTarget(cent))
-				DrawPlayerESP(cent, &rect);
+				DrawPlayerESP(cent, compassType, parentRect, rect);
 			else if (cent->nextState.eType == 3 || cent->nextState.eType == 4)
-				DrawEntityESP(cent, &rect);
+				DrawEntityESP(cent, compassType, parentRect, rect);
 		}
+
+		CG_CompassDrawVehicles(0, compassType, 14, parentRect, rect, Colors::white);
+		CG_CompassDrawVehicles(0, compassType, 13, parentRect, rect, Colors::white);
+		CG_CompassDrawHelicopter(0, compassType, 12, parentRect, rect, Colors::white);
+		CG_CompassDrawPlayerPointers_MiniMap(0, compassType, parentRect, rect,
+			0, Colors::white);
+		CG_CompassDrawDogs(0, compassType, 17, parentRect, rect, (Material*)0x2686568,
+			Colors::white);
+		CG_CompassDrawPlayer(0, compassType, parentRect, rect,
+			Material_RegisterHandle("compassping_player", 0), Colors::white);
 	}
 }

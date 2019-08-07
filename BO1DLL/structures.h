@@ -553,7 +553,7 @@ enum FuncAddresses : DWORD
 	CG_CompassUpYawVector_a					= 0x476540,
 	CG_WorldPosToCompass_a					= 0x4C45E0,
 	CG_CompassDrawPlayer_a					= 0x403500,
-	CG_CompassDrawDogs_a					= 0x403500,
+	CG_CompassDrawDogs_a					= 0x4BD180,
 	CG_CompassDrawHelicopter_a				= 0x4C9DA0,
 	CG_CompassDrawPlayerPointers_MiniMap_a  = 0x566D30,
 	CG_CompassCalcDimensions_a				= 0x65DEE0,
@@ -694,16 +694,16 @@ extern void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float
 	float w, float h, int horzAlign, int vertAlign, const float *color,
 	struct Material *material);
 extern void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
-	rectDef_s *parentRect, rectDef_s *rect, struct Material *material,
+	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
 	const float *color, bool grid);
 extern bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
-	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
+	const rectDef_s *mapRect, const float *north, const float *playerWorldPos,
 	const float *in, float *out, float *outClipped);
 extern void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result);
 extern void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
 	float *h);
 extern void(__cdecl *CG_CompassCalcDimensions)(int compassType,
-	cg_s *cgameGlob, rectDef_s *parentRect, rectDef_s *rect,
+	cg_s *cgameGlob, const rectDef_s *parentRect, const rectDef_s *rect,
 	float *x, float *y, float *w, float *h);
 extern float(__cdecl *AngleNormalize360)(const float angle);
 extern void(__cdecl *CG_CompassDrawVehicles)(int localClientNum, int compassType,
@@ -713,6 +713,12 @@ extern void(__cdecl *CG_CompassDrawHelicopter)(int localClientNum, int compassTy
 extern void(__cdecl *CG_CompassDrawPlayer)(int localClientNum, int compassType,
 	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
 	const float *color);
+extern void(__cdecl *CG_CompassDrawPlayerPointers_MiniMap)(int localClientNum,
+	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
+	struct Material *material, const float *color);
+extern void(__cdecl *CG_CompassDrawDogs)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	struct Material *dogMaterial, const float *color);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
@@ -725,6 +731,7 @@ void CG_BulletEndpos(int randSeed, const float spread, const float *start,
 bool BG_HasPerk(int index, const char *perkName);
 bool Key_IsDown(const char *bind);
 bool IN_IsForegroundWindow();
-bool WorldPosToCompass(const centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect);
+bool WorldPosToCompass(const centity_s *cent, int compassType,
+	const rectDef_s *mapRect, rectDef_s *itemRect);
 
 #pragma pack(pop)

@@ -129,7 +129,8 @@ void Aimbot::RemoveSpread(playerState_s *ps, usercmd_s *cmd)
 
 bool InGame()
 {
-	return Dvar_FindVar("cl_ingame")->current.enabled && !cgameGlob->inKillCam;
+	return Dvar_FindVar("cl_ingame")->current.enabled 
+		&& !cgameGlob->inKillCam;
 }
 
 float Distance3D(vec3_t c1, vec3_t c2)

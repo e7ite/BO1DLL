@@ -143,14 +143,14 @@ void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float y,
 = (void(__cdecl*)(ScreenPlacement*, float, float, float, float, int, int,
 	const float*, Material*))UI_DrawHandlePic_a;
 void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
-	rectDef_s *parentRect, rectDef_s *rect, struct Material *material,
+	const rectDef_s *parentRect, const rectDef_s *rect, Material *material,
 	const float *color, bool grid)
-= (void(__cdecl*)(int, int, rectDef_s*, rectDef_s*, Material*, const float*,
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*, const float*,
 	bool))CG_CompassDrawPlayerMap_a;
 bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
-	rectDef_s *mapRect, const float *north, const float *playerWorldPos,
+	const rectDef_s *mapRect, const float *north, const float *playerWorldPos,
 	const float *in, float *out, float *outClipped)
-= (bool(__cdecl*)(int, cg_s*, rectDef_s*, const float*, const float*,
+= (bool(__cdecl*)(int, cg_s*, const rectDef_s*, const float*, const float*,
 	const float*, float*, float*))CG_WorldPosToCompass_a;
 void(__cdecl *CG_CompassUpYawVector)(cg_s *cgameGlob, float *result)
 = (void(__cdecl*)(cg_s*, float*))CG_CompassUpYawVector_a;
@@ -158,9 +158,9 @@ void(__cdecl *CalcCompassFriendlySize)(int compassType, float *w,
 	float *h)
 = (void(__cdecl*)(int, float*, float*))CalcCompassFriendlySize_a;	
 void(__cdecl *CG_CompassCalcDimensions)(int compassType,
-	cg_s *cgameGlob, rectDef_s *parentRect, rectDef_s *rect,
+	cg_s *cgameGlob, const rectDef_s *parentRect, const rectDef_s *rect,
 	float *x, float *y, float *w, float *h)
-= (void(__cdecl*)(int, cg_s*, rectDef_s*, rectDef_s*,
+= (void(__cdecl*)(int, cg_s*, const rectDef_s*, const rectDef_s*,
 	float*, float*, float*, float*))CG_CompassCalcDimensions_a;
 float(__cdecl *AngleNormalize360)(const float angle)
 = (float(__cdecl*)(const float))AngleNormalize360_a;
@@ -177,6 +177,16 @@ void(__cdecl *CG_CompassDrawPlayer)(int localClientNum, int compassType,
 	const float *color)
 = (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*,
 	const float*))CG_CompassDrawPlayer_a;
+void(__cdecl *CG_CompassDrawPlayerPointers_MiniMap)(int localClientNum,
+	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
+	struct Material *material, const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
+	Material*, const float*))CG_CompassDrawPlayerPointers_MiniMap_a;
+void(__cdecl *CG_CompassDrawDogs)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	struct Material *dogMaterial, const float *color)
+= (void(__cdecl*)(int, int, int, const rectDef_s*, const rectDef_s*, Material*,
+	const float*))CG_CompassDrawDogs_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {
@@ -360,14 +370,16 @@ bool IN_IsForegroundWindow()
 	return GetForegroundWindow() == *hWnd;
 }
 
-bool WorldPosToCompass(const centity_s *cent, rectDef_s *mapRect, rectDef_s *itemRect)
+bool WorldPosToCompass(const centity_s *cent, int compassType,
+	const rectDef_s *mapRect, rectDef_s *itemRect)
 {
 	bool clipped;
 	float yawVector[2];
 
 	CG_CompassUpYawVector(cgameGlob, yawVector);
-	clipped = CG_WorldPosToCompass(0, cgameGlob, mapRect, yawVector,
-		cgameGlob->refdef.vieworg, cent->pose.origin, 0, &itemRect->x);
+	clipped = CG_WorldPosToCompass(compassType,
+		cgameGlob, mapRect, yawVector, cgameGlob->refdef.vieworg, 
+		cent->pose.origin, 0, &itemRect->x);
 
 	float centerX = mapRect->w * 0.5 + mapRect->x;
 	float centerY = mapRect->h * 0.5 + mapRect->y;

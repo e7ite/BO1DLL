@@ -61,7 +61,7 @@ void Menu::Build()
 }
 
 void Menu::Insert(int sub, const char *option, int *data,
-	OptionType type, std::function<void()> callback)
+	OptionType type, const std::function<void()> &callback)
 {
 	options.at(sub).push_back(Option(option, data, type, callback));
 }

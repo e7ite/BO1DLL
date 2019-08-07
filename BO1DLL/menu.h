@@ -48,7 +48,7 @@ namespace Menu
 	void Build();
 	void Execute();
 	void Insert(int sub, const char *option, int *data,
-		OptionType type, std::function<void()> func);
+		OptionType type, const std::function<void()> &func);
 	void LoadSub(int sub);
 	void CloseSub();
 	void BoolModify(int *var);
