@@ -561,6 +561,11 @@ enum FuncAddresses : DWORD
 	CG_CompassDrawEnemies_a					= 0x6951D0,
 	CG_CompassDrawTurrets_a					= 0x6AB4D0,
 	CG_CompassDrawVehicles_a				= 0x55A600,
+	CG_CompassDrawGuidedMissle_a			= 0x4FCA30,
+	CG_CompassDrawIncomingArtilleryIcon_a	= 0x55DCB0,
+	CG_CompassDrawBorder_a					= 0x6AA850,
+	CG_CompassDrawRadarEffects_a			= 0x6A9D90,
+	CG_CompassDrawArtilleryIcon_a			= 0x5C9600,
 	CG_CompassDrawPlayerMap_a				= 0x55FBC0,
 	BG_GetPerkIndexForName_a				= 0x5E6C80,
 	Sys_Milliseconds_a						= 0x675F60,
@@ -719,6 +724,20 @@ extern void(__cdecl *CG_CompassDrawPlayerPointers_MiniMap)(int localClientNum,
 extern void(__cdecl *CG_CompassDrawDogs)(int localClientNum, int compassType,
 	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
 	struct Material *dogMaterial, const float *color);
+extern void(__cdecl *CG_CompassDrawGuidedMissle)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color);
+extern void(__cdecl *CG_CompassDrawTurrets)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color);
+extern void(__cdecl *CG_CompassDrawIncomingArtilleryIcon)(int localClientNum,
+	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color);
+extern void(__cdecl *CG_CompassDrawArtilleryIcon)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, const float *color);
+extern void(__cdecl *CG_CompassDrawBorder)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
+	const float *color);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);

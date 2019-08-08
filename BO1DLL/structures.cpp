@@ -187,6 +187,30 @@ void(__cdecl *CG_CompassDrawDogs)(int localClientNum, int compassType,
 	struct Material *dogMaterial, const float *color)
 = (void(__cdecl*)(int, int, int, const rectDef_s*, const rectDef_s*, Material*,
 	const float*))CG_CompassDrawDogs_a;
+void(__cdecl *CG_CompassDrawGuidedMissle)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color)
+= (void(__cdecl*)(int, int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawGuidedMissle_a;
+void(__cdecl *CG_CompassDrawTurrets)(int localClientNum, int compassType,
+	int eType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color)
+= (void(__cdecl*)(int, int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawTurrets_a;
+void(__cdecl *CG_CompassDrawArtilleryIcon)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawArtilleryIcon_a;
+void(__cdecl *CG_CompassDrawIncomingArtilleryIcon)(int localClientNum,
+	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawIncomingArtilleryIcon_a;
+void(__cdecl *CG_CompassDrawBorder)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
+	const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*,
+	const float*))CG_CompassDrawBorder_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {

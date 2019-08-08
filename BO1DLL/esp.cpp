@@ -161,6 +161,8 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 	{
 		CG_CompassDrawPlayerMap(0, compassType, parentRect, rect,
 			cgameGlob->compassMapMaterial, Colors::white, 0);
+		CG_CompassDrawBorder(0, compassType, parentRect, rect,
+			Material_RegisterHandle("white", 0), Colors::red);
 
 		for (__int32 i = 1023; i >= 0; --i)
 		{
@@ -178,6 +180,11 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 		CG_CompassDrawVehicles(0, compassType, 14, parentRect, rect, Colors::white);
 		CG_CompassDrawVehicles(0, compassType, 13, parentRect, rect, Colors::white);
 		CG_CompassDrawHelicopter(0, compassType, 12, parentRect, rect, Colors::white);
+		CG_CompassDrawGuidedMissle(0, compassType, 4, parentRect, rect, Colors::white);
+		CG_CompassDrawTurrets(0, compassType, 11, parentRect, rect, Colors::white);
+		CG_CompassDrawIncomingArtilleryIcon(0, compassType, parentRect, rect, 
+			Colors::white);
+		CG_CompassDrawArtilleryIcon(0, compassType, parentRect, rect, Colors::white);
 		CG_CompassDrawPlayerPointers_MiniMap(0, compassType, parentRect, rect,
 			0, Colors::white);
 		CG_CompassDrawDogs(0, compassType, 17, parentRect, rect, (Material*)0x2686568,
