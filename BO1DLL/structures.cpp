@@ -211,6 +211,15 @@ void(__cdecl *CG_CompassDrawBorder)(int localClientNum, int compassType,
 	const float *color)
 = (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*,
 	const float*))CG_CompassDrawBorder_a;
+void(__cdecl *CG_CompassDrawFakeFire)(int localClientNum, int compassType,
+	const rectDef_s *parentRect, const rectDef_s *rect, const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawFakeFire_a;
+void(__cdecl *CG_CompassDrawRadarEffects)(int localClientNum,
+	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
+	const float *color)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
+	const float*))CG_CompassDrawRadarEffects_a;
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {

@@ -72,8 +72,7 @@ void DrawEntityESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 		material = Material_RegisterHandle("perk_scavenger", 0);
 
 		CG_DrawRotatedPicPhysical(scrPlace, origin[0], origin[1],
-			rect.w, rect.h, 0, Colors::white,
-			material);
+			rect.w, rect.h, 0, Colors::white, material);
 	}
 	else
 	{
@@ -87,8 +86,7 @@ void DrawEntityESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 
 		if (weap)
 			CG_DrawRotatedPicPhysical(scrPlace, rect.x, rect.y,
-				rect.w, rect.h, 0, Colors::white,
-				material);
+				rect.w, rect.h, 0, Colors::white, material);
 	}
 
 	CalcCompassFriendlySize(0, &rect.w, &rect.h);
@@ -145,11 +143,11 @@ void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 
 	float angle;
 	if (!compassType)
-		angle = AngleNormalize360(cgameGlob->refdefViewAngles[1] -
-			cent->pose.angles[1]);
+		angle = AngleNormalize360(cgameGlob->refdefViewAngles[1] 
+			- cent->pose.angles[1]);
 	else
-		angle = AngleNormalize360(cgameGlob->compassNorthYaw -
-			cent->pose.angles[1]);
+		angle = AngleNormalize360(cgameGlob->compassNorthYaw
+			- cent->pose.angles[1]);
 
 	CG_DrawRotatedPic(scrPlace, rect.x, rect.y, rect.w, rect.h, 0, 0,
 		angle, color, Material_RegisterHandle("compassping_player", 0));
@@ -189,6 +187,8 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 			0, Colors::white);
 		CG_CompassDrawDogs(0, compassType, 17, parentRect, rect, (Material*)0x2686568,
 			Colors::white);
+		CG_CompassDrawFakeFire(0, compassType, parentRect, rect, Colors::white);
+		CG_CompassDrawRadarEffects(0, compassType, parentRect, rect, Colors::white);
 		CG_CompassDrawPlayer(0, compassType, parentRect, rect,
 			Material_RegisterHandle("compassping_player", 0), Colors::white);
 	}

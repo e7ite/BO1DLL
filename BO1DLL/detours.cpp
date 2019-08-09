@@ -116,11 +116,11 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 	rectDef_s parentRect = { 0, 0, 0x44200000, 0x43F00000, 0, 0 };
 	rectDef_s rect =
 	{
-		GameData::dc->screenDimensions[0] / 2 / scrPlace->scaleVirtualToFull[0],
-		GameData::dc->screenDimensions[1] / 2 / scrPlace->scaleVirtualToFull[1],
+		GameData::dc->screenDimensions[0] / 2 / scrPlace->scaleVirtualToFull[0] - 100,
+		GameData::dc->screenDimensions[1] / 2 / scrPlace->scaleVirtualToFull[1] - 100,
 		300, 300, 0, 0
 	};
-	RenderESP(0, &parentRect, &rect);
+	RenderESP(1, &parentRect, &rect);
 
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
 }
