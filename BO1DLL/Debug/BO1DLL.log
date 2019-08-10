@@ -1,13 +1,13 @@
 ﻿  
   
-  Library BO1DLL.dll Loaded 10:05:43
+  Library BO1DLL.dll Loaded 12:08:02
   
   
   cl : Command line warning D9025 : overriding '/sdl-' with '/GS-'
-  aimbot.cpp
+  detours.cpp
   BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 10:05:45
+  Library BO1DLL.dll Loaded 12:08:03
   
   

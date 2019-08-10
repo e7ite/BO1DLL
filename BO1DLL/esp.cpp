@@ -143,11 +143,12 @@ void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 
 	float angle;
 	if (!compassType)
-		angle = AngleNormalize360(cgameGlob->refdefViewAngles[1] 
-			- cent->pose.angles[1]);
+		angle = cgameGlob->refdefViewAngles[1]
+			- cent->pose.angles[1];
 	else
-		angle = AngleNormalize360(cgameGlob->compassNorthYaw
-			- cent->pose.angles[1]);
+		angle = cgameGlob->compassNorthYaw
+			- cent->pose.angles[1];
+	angle = AngleNormalize360(angle);
 
 	CG_DrawRotatedPic(scrPlace, rect.x, rect.y, rect.w, rect.h, 0, 0,
 		angle, color, Material_RegisterHandle("compassping_player", 0));
@@ -160,7 +161,7 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 		CG_CompassDrawPlayerMap(0, compassType, parentRect, rect,
 			cgameGlob->compassMapMaterial, Colors::white, 0);
 		CG_CompassDrawBorder(0, compassType, parentRect, rect,
-			Material_RegisterHandle("white", 0), Colors::red);
+			Material_RegisterHandle("white", 0), Colors::white);
 
 		for (__int32 i = 1023; i >= 0; --i)
 		{

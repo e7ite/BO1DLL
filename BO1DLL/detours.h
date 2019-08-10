@@ -13,6 +13,9 @@ enum DetourAddresses : DWORD
 	CL_MouseMove_a						= 0x80DB40,
 	CL_MouseMoveRet_a					= 0x80DB51,
 	UI_KeysBypassMenu_a					= 0x4F3550,
+	CG_DrawNightVisionOverlay_a			= 0x56B780,
+	Menu_Paint_a						= 0x6836D0,
+	CG_GetScramblerEnemyAlpha_a			= 0x4CDB00,
 };
 
 extern void(__cdecl *Menu_PaintAll)(int localClientNum, UiContext *dc);
@@ -29,6 +32,11 @@ extern void(__cdecl *Menu_HandleMouseMove)(int localClientNum, UiContext *dc,
 extern void(__cdecl *Menus_ShowByName)(UiContext *dc, const char *windowName);
 extern __usercall CL_MouseMove;	
 extern bool(__cdecl *UI_KeysBypassMenu)(int localClientNum);
+extern void(__cdecl *CG_DrawNightVisionOverlay)(int localClientNum);
+extern void(__cdecl *Menu_Paint)(int localClientNum, UiContext *dc,
+	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
+	int UI3OverrideID);
+extern float(__cdecl *CG_GetScramblerEnemyAlpha)(int localClientNum);
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction);
 void DetourRemove(DWORD targetFunction, DWORD detourFunction);
@@ -48,3 +56,8 @@ void Menu_HandleMouseMoveDetour(int localClientNum, UiContext *dc,
 void Menus_ShowByNameDetour(UiContext *dc, const char *windowName);
 void CL_MouseMoveStub(int localClientNum, usercmd_s *cmd);
 bool CL_MouseMoveDetour(int localClientNum, usercmd_s *cmd);
+void CG_DrawNightVisionOverlayDetour(int localClientNum);
+void Menu_PaintDetour(int localClientNum, UiContext *dc,
+	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
+	int UI3OverrideID);
+float CG_GetScramblerEnemyAlphaDetour(int localClientNum);

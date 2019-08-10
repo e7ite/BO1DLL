@@ -23,6 +23,15 @@ void(__cdecl *Menus_ShowByName)(UiContext *dc, const char *windowName)
 __usercall CL_MouseMove = (__usercall)CL_MouseMove_a;
 bool(__cdecl *UI_KeysBypassMenu)(int localClientNum)
 = (bool(__cdecl*)(int))UI_KeysBypassMenu_a;
+void(__cdecl *CG_DrawNightVisionOverlay)(int localClientNum)
+= (void(__cdecl*)(int))CG_DrawNightVisionOverlay_a;
+void(__cdecl *Menu_Paint)(int localClientNum, UiContext *dc,
+	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
+	int UI3OverrideID)
+= (void(__cdecl*)(int, UiContext*, ScreenPlacementStack*, menuDef_t*,
+	int))Menu_Paint_a;
+float(__cdecl *CG_GetScramblerEnemyAlpha)(int localClientNum)
+= (float(__cdecl*)(int))CG_GetScramblerEnemyAlpha_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -95,7 +104,7 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 		if (!(*(char*)0xE6DA38 & 0x10) && *(int*)0x3779330 != 7)
 			UI_DrawHandlePic(
 				scrPlace,
-				GameData::dc->cursorPos[0]
+				GameData::dc->cursorPos[0] 
 				- ((32.0f * scrPlace->scaleVirtualToReal[0])
 					/ scrPlace->scaleVirtualToFull[0]) * 0.5f,
 				GameData::dc->cursorPos[1]
@@ -109,18 +118,6 @@ void Menu_PaintAllDetour(int localClientNum, UiContext *dc)
 	}
 	else
 		WriteBytes(0x680210, (const char*)prevOps, 0x17);
-	
-	if (InGame())
-		(*(dvar_s**)0xD5864C)->current.value = 0.0f;
-
-	rectDef_s parentRect = { 0, 0, 0x44200000, 0x43F00000, 0, 0 };
-	rectDef_s rect =
-	{
-		GameData::dc->screenDimensions[0] / 2 / scrPlace->scaleVirtualToFull[0] - 100,
-		GameData::dc->screenDimensions[1] / 2 / scrPlace->scaleVirtualToFull[1] - 100,
-		300, 300, 0, 0
-	};
-	RenderESP(1, &parentRect, &rect);
 
 	WriteBytes(0x5DADFC, 1 ? "\xEB" : "\x74", 1);
 }
@@ -202,6 +199,25 @@ void CL_DrawStretchPicDetour(ScreenPlacement *scrPlace, float x,
 		s1, t1, s2, t2, color, material);
 }
 
+void CG_DrawNightVisionOverlayDetour(int localClientNum)
+{
+	(*(dvar_s**)0xD5864C)->current.value = 0.0f;
+	(*(dvar_s**)0xC9D75C)->current.value = 0.7f;
+
+	rectDef_s parentRect = { 0, 0, 0x44200000, 0x43F00000, 0, 0 };
+	rectDef_s rect =
+	{
+		GameData::dc->screenDimensions[0] / 2 
+			/ scrPlace->scaleVirtualToFull[0] - 375,
+		GameData::dc->screenDimensions[1] / 2 
+			/ scrPlace->scaleVirtualToFull[1] - 235,
+		150, 150, 0, 0
+	};
+	RenderESP(1, &parentRect, &rect);
+
+	CG_DrawNightVisionOverlay(localClientNum);
+}
+
 void Menu_HandleKeyDetour(int localClientNum, UiContext *dc,
 	struct menuDef_t *menu, int key, unsigned int down)
 {
@@ -247,4 +263,17 @@ CONTINUE_FLOW:
 bool CL_MouseMoveDetour(int localClientNum, usercmd_s *cmd)
 {
 	return !Menu::open;
+}
+
+void Menu_PaintDetour(int localClientNum, UiContext *dc,
+	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
+	int UI3OverrideID)
+{
+	if (strcmp(*(const char **)menu, "compass_old"))
+		Menu_Paint(localClientNum, dc, scrPlaceViewStack, menu, UI3OverrideID);
+}
+
+float CG_GetScramblerEnemyAlphaDetour(int localClientNum)
+{
+	return 1.0f;
 }
