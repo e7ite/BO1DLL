@@ -32,6 +32,11 @@ void(__cdecl *Menu_Paint)(int localClientNum, UiContext *dc,
 	int))Menu_Paint_a;
 float(__cdecl *CG_GetScramblerEnemyAlpha)(int localClientNum)
 = (float(__cdecl*)(int))CG_GetScramblerEnemyAlpha_a;
+float(__cdecl *CG_FadeCompass)(int localClientNum, int displayStartTime,
+	int	compassType) = (float(__cdecl*)(int, int, int))CG_FadeCompass_a;
+float(__cdecl *CG_FadeCompassIcons)(int localClientNum,
+	bool ignoreGlobalScrambler) 
+= (float(__cdecl*)(int, bool))CG_FadeCompassIcons_a;
 
 void DetourFunction(DWORD targetFunction, DWORD detourFunction)
 {
@@ -78,7 +83,8 @@ void RemoveDetour(QWORD bytes)
 
 void InsertDetour(LPVOID targetFunction, LPVOID detourFunction)
 {
-	GameData::detours.push_back(((QWORD)targetFunction << 32) | (QWORD)detourFunction);
+	GameData::detours.push_back(
+		((QWORD)targetFunction << 32) | (QWORD)detourFunction);
 	DetourFunction((DWORD)targetFunction, (DWORD)detourFunction);
 }
 
@@ -171,8 +177,8 @@ void CL_WritePacketDetour(int localClientNum)
 			if (Variables::noSpread)
 				Aimbot::RemoveSpread(&cgameGlob->predictedPlayerState, ocmd);
 
-			Aimbot::FixMovement(ocmd, ShortToAngle(ocmd->angles[1]), oldAngle,
-				(float)ocmd->forwardmove, (float)ocmd->rightmove);
+			Aimbot::FixMovement(ocmd, ShortToAngle(ocmd->angles[1]),
+				oldAngle, ocmd->forwardmove, ocmd->rightmove);
 
 			if (Variables::autoAim)
 				clientActive->usingAds = true;
@@ -201,9 +207,6 @@ void CL_DrawStretchPicDetour(ScreenPlacement *scrPlace, float x,
 
 void CG_DrawNightVisionOverlayDetour(int localClientNum)
 {
-	(*(dvar_s**)0xD5864C)->current.value = 0.0f;
-	(*(dvar_s**)0xC9D75C)->current.value = 0.7f;
-
 	rectDef_s parentRect = { 0, 0, 0x44200000, 0x43F00000, 0, 0 };
 	rectDef_s rect =
 	{
@@ -213,7 +216,7 @@ void CG_DrawNightVisionOverlayDetour(int localClientNum)
 			/ scrPlace->scaleVirtualToFull[1] - 235,
 		150, 150, 0, 0
 	};
-	RenderESP(1, &parentRect, &rect);
+	RenderESP(Variables::fullMap, &parentRect, &rect);
 
 	CG_DrawNightVisionOverlay(localClientNum);
 }
@@ -230,12 +233,6 @@ void Menu_HandleMouseMoveDetour(int localClientNum, UiContext *dc,
 {
 	if (!Menu::open)
 		Menu_HandleMouseMove(localClientNum, dc, menu);
-}
-
-void Menus_ShowByNameDetour(UiContext *dc, const char *windowName)
-{
-	if (strcmp(windowName, "Compass"))
-		return Menus_ShowByName(dc, windowName);
 }
 
 DWORD CL_MouseMoveRet = CL_MouseMoveRet_a;
@@ -269,11 +266,31 @@ void Menu_PaintDetour(int localClientNum, UiContext *dc,
 	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
 	int UI3OverrideID)
 {
-	if (strcmp(*(const char **)menu, "compass_old"))
-		Menu_Paint(localClientNum, dc, scrPlaceViewStack, menu, UI3OverrideID);
+	if (!Variables::customRadar 
+		|| strcmp(*(const char**)menu, "compass_old"))
+		return Menu_Paint(localClientNum, dc, 
+			scrPlaceViewStack, menu, UI3OverrideID);
+
+	(*(dvar_s**)0xD5864C)->current.value = 0.0f;
+	(*(dvar_s**)0xC9D75C)->current.value = 0.7f;
+	cgameGlob->globalScramblerActive = 0;
 }
 
 float CG_GetScramblerEnemyAlphaDetour(int localClientNum)
 {
-	return 1.0f;
+	return Variables::customRadar 
+		? 0.0f : CG_GetScramblerEnemyAlpha(localClientNum);
+}
+
+float CG_FadeCompassDetour(int localClientNum, int displayStartTime,
+	int compassType)
+{
+	return Variables::customRadar
+		? 1.0f : CG_FadeCompass(localClientNum, displayStartTime, compassType);
+}
+
+float CG_FadeCompassIconsDetour(int localClientNum, bool ignoreGlobalScrambler)
+{
+	return Variables::customRadar
+		? 1.0f : CG_FadeCompassIcons(localClientNum, ignoreGlobalScrambler);
 }

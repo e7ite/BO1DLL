@@ -15,6 +15,7 @@ enum Submenus
 	MISC_MENU,
 	AIMBOT_MENU,
 	ESP_MENU,
+	HUD_MENU,
 };
 
 enum OptionType
@@ -75,6 +76,10 @@ namespace Variables
 	extern int scavengerESP;
 	extern int pickupESP;
 	extern int missileESP;
+
+	extern int customRadar;
+	extern int fullMap;
+	extern int serverInfo;
 }
 
 void DrawFillRect(float x, float y, float width, float height,

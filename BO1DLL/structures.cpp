@@ -144,8 +144,8 @@ void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float y,
 	const float*, Material*))UI_DrawHandlePic_a;
 void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
 	const rectDef_s *parentRect, const rectDef_s *rect, Material *material,
-	const float *color, bool grid)
-= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*, const float*,
+	float *color, bool grid)
+= (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*, Material*, float*,
 	bool))CG_CompassDrawPlayerMap_a;
 bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
 	const rectDef_s *mapRect, const float *north, const float *playerWorldPos,

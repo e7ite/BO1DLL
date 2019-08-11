@@ -17,11 +17,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
 		InsertDetour(&CL_DrawStretchPic,		 CL_DrawStretchPicDetour);
 		InsertDetour(&Menu_HandleKey,			 Menu_HandleKeyDetour);
 		InsertDetour(&Menu_HandleMouseMove,		 Menu_HandleMouseMoveDetour);
-		InsertDetour(&Menus_ShowByName,			 Menus_ShowByNameDetour);
 		InsertDetour(&CL_MouseMove,				 CL_MouseMoveStub);
 		InsertDetour(&CG_DrawNightVisionOverlay, CG_DrawNightVisionOverlayDetour);
 		InsertDetour(&Menu_Paint,				 Menu_PaintDetour);
 		InsertDetour(&CG_GetScramblerEnemyAlpha, CG_GetScramblerEnemyAlphaDetour);
+		InsertDetour(&CG_FadeCompass,			 CG_FadeCompassDetour);
+		InsertDetour(&CG_FadeCompassIcons,		 CG_FadeCompassIconsDetour);
 		break;
     case DLL_PROCESS_DETACH:
 		FreeConsole();

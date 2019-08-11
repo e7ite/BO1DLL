@@ -18,18 +18,23 @@ int Variables::friendlyESP;
 int Variables::scavengerESP;
 int Variables::pickupESP;
 int Variables::missileESP;
+int Variables::customRadar;
+int Variables::fullMap;
+int Variables::serverInfo;
 
 void Menu::Build()
 {
 	using namespace Variables;
 
-	for (int sub = MAIN_MENU; sub <= ESP_MENU; ++sub)
+	for (int sub = MAIN_MENU; sub <= HUD_MENU; ++sub)
 		options.push_back(std::vector<Option>());
 
 	Insert(MAIN_MENU, "Aimbot Menu", nullptr,
 		TYPE_SUB, std::bind(LoadSub, AIMBOT_MENU));
 	Insert(MAIN_MENU, "ESP Menu", nullptr,
 		TYPE_SUB, std::bind(LoadSub, ESP_MENU));
+	Insert(MAIN_MENU, "HUD Menu", nullptr,
+		TYPE_SUB, std::bind(LoadSub, HUD_MENU));
 	Insert(MAIN_MENU, "Misc Menu", nullptr,
 		TYPE_SUB, std::bind(LoadSub, MISC_MENU));
 
@@ -43,6 +48,13 @@ void Menu::Build()
 		TYPE_BOOL, std::bind(BoolModify, &missileESP));
 	Insert(ESP_MENU, "Scavenger ESP", &scavengerESP,
 		TYPE_BOOL, std::bind(BoolModify, &scavengerESP));
+
+	Insert(HUD_MENU, "Custom Radar", &customRadar,
+		TYPE_BOOL, std::bind(BoolModify, &customRadar));
+	Insert(HUD_MENU, "Full Map View", &fullMap,
+		TYPE_BOOL, std::bind(BoolModify, &fullMap));
+	Insert(HUD_MENU, "Server Info", &serverInfo,
+		TYPE_BOOL, std::bind(BoolModify, &serverInfo));
 
 	Insert(AIMBOT_MENU, "Enable Aimbot", &enableAimbot,
 		TYPE_BOOL, std::bind(BoolModify, &enableAimbot));

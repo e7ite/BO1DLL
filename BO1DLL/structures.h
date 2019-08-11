@@ -293,41 +293,43 @@ struct snapshot_s
 
 struct cg_s
 {
-	int clientNum;							//0x000000
-	int localClientNum;						//0x000004
-	char pad00[0x20];						//0x000008
-	snapshot_s *snap;						//0x000028
-	snapshot_s *nextSnap;					//0x00002C
-	char pad01[0x40658];					//0x000030
-	int time;								//0x040688
-	int oldTime;							//0x04068C
-	int physicsTime;						//0x040690
-	int mapRestart;							//0x040694
-	int renderingThirdPerson;				//0x040698
-	playerState_s predictedPlayerState;		//0x04069C
-	char pad02[0x37C];						//0x042D84
-	refdef_s refdef;						//0x043100
-	char pad03[0x184BC];					//0x043164
-	float refdefViewAngles[3];				//0x05B620
-	char pad04[0x3824];						//0x05B62C
-	int weaponSelect;						//0x05EE50
-	char pad05[0x140];						//0x05EE54	
-	float gunPitch;							//0x05EF94
-	float gunYaw;							//0x05EF98
-	char pad06[0x50];						//0x05EF9C
-	float compassNorthYaw;					//0x05EFEC
-	float compassNorth[2];					//0x05EFF0
-	struct Material *compassMapMaterial;	//0x05EFF8
-	float compassMapUpperLeft[2];			//0x05EFFC
-	float compassMapWorldSize[2];			//0x05F004
-	char pad07[0x40];						//0x05F00C
-	float zoomSensitivity;					//0x05F04C
-	char pad08[0x88];						//0x05F050
-	int	inKillCam;							//0x05F0D8
-	char pad09[0x15C];						//0x05F0DC
-	clientInfo_t clients[0x12];				//0x05F238
-	char pad10[0xA038];						//0x065AD8
-	float aimSpreadScale;					//0x06FB10
+	int clientNum;							//0x00000
+	int localClientNum;						//0x00004
+	char pad00[0x20];						//0x00008
+	snapshot_s *snap;						//0x00028
+	snapshot_s *nextSnap;					//0x0002C
+	char pad01[0x40658];					//0x00030
+	int time;								//0x40688
+	int oldTime;							//0x4068C
+	int physicsTime;						//0x40690
+	int mapRestart;							//0x40694
+	int renderingThirdPerson;				//0x40698
+	playerState_s predictedPlayerState;		//0x4069C
+	char pad02[0x37C];						//0x42D84
+	refdef_s refdef;						//0x43100
+	char pad03[0x184BC];					//0x43164
+	float refdefViewAngles[3];				//0x5B620
+	char pad04[0x3824];						//0x5B62C
+	int weaponSelect;						//0x5EE50
+	char pad05[0x140];						//0x5EE54	
+	float gunPitch;							//0x5EF94
+	float gunYaw;							//0x5EF98
+	char pad06[0x50];						//0x5EF9C
+	float compassNorthYaw;					//0x5EFEC
+	float compassNorth[2];					//0x5EFF0
+	struct Material *compassMapMaterial;	//0x5EFF8
+	float compassMapUpperLeft[2];			//0x5EFFC
+	float compassMapWorldSize[2];			//0x5F004
+	char pad07[0x40];						//0x5F00C
+	float zoomSensitivity;					//0x5F04C
+	char pad08[0x88];						//0x5F050
+	int	inKillCam;							//0x5F0D8
+	char pad09[0x15C];						//0x5F0DC
+	clientInfo_t clients[0x12];				//0x5F238
+	char pad10[0xA038];						//0x65AD8
+	float aimSpreadScale;					//0x6FB10
+	char pad11[0x1CB0];						//0x6FB14
+	int globalScramblerActive;				//0x717C4
 }; 
 
 struct cgs_t
@@ -701,7 +703,7 @@ extern void(__cdecl *UI_DrawHandlePic)(ScreenPlacement *scrPlace, float x, float
 	struct Material *material);
 extern void(__cdecl *CG_CompassDrawPlayerMap)(int localClientNum, int compassType,
 	const rectDef_s *parentRect, const rectDef_s *rect, struct Material *material,
-	const float *color, bool grid);
+	float *color, bool grid);
 extern bool(__cdecl *CG_WorldPosToCompass)(int compassType, cg_s *cgameGlob,
 	const rectDef_s *mapRect, const float *north, const float *playerWorldPos,
 	const float *in, float *out, float *outClipped);

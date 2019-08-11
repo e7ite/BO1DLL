@@ -89,6 +89,9 @@ void DrawEntityESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 				rect.w, rect.h, 0, Colors::white, material);
 	}
 
+	if (!Variables::customRadar)
+		return;
+
 	CalcCompassFriendlySize(0, &rect.w, &rect.h);
 	if (!scavenger)
 		ScaleWeapon(weap, &rect);
@@ -137,18 +140,16 @@ void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 		rect.y, rect.w, rect.h, 0, Colors::white,
 		weap->weapDef->hudIcon);
 
+	if (!Variables::customRadar)
+		return;
+
 	CalcCompassFriendlySize(0, &rect.w, &rect.h);
 
 	WorldPosToCompass(cent, compassType, mapRect, &rect);
 
-	float angle;
-	if (!compassType)
-		angle = cgameGlob->refdefViewAngles[1]
-			- cent->pose.angles[1];
-	else
-		angle = cgameGlob->compassNorthYaw
-			- cent->pose.angles[1];
-	angle = AngleNormalize360(angle);
+	float angle = compassType ?
+		cgameGlob->compassNorthYaw : cgameGlob->refdefViewAngles[1];
+	angle = AngleNormalize360(angle - cent->pose.angles[1]);
 
 	CG_DrawRotatedPic(scrPlace, rect.x, rect.y, rect.w, rect.h, 0, 0,
 		angle, color, Material_RegisterHandle("compassping_player", 0));
@@ -158,10 +159,13 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 {
 	if (InGame())
 	{
-		CG_CompassDrawPlayerMap(0, compassType, parentRect, rect,
-			cgameGlob->compassMapMaterial, Colors::white, 0);
-		CG_CompassDrawBorder(0, compassType, parentRect, rect,
-			Material_RegisterHandle("white", 0), Colors::white);
+		if (Variables::customRadar)
+		{
+			CG_CompassDrawPlayerMap(0, compassType, parentRect, rect,
+				cgameGlob->compassMapMaterial, Colors::white, 0);
+			CG_CompassDrawBorder(0, compassType, parentRect, rect,
+				Material_RegisterHandle("white", 0), Colors::white);
+		}
 
 		for (__int32 i = 1023; i >= 0; --i)
 		{
@@ -176,21 +180,32 @@ void RenderESP(int compassType, const rectDef_s *parentRect, const rectDef_s *re
 				DrawEntityESP(cent, compassType, parentRect, rect);
 		}
 
-		CG_CompassDrawVehicles(0, compassType, 14, parentRect, rect, Colors::white);
-		CG_CompassDrawVehicles(0, compassType, 13, parentRect, rect, Colors::white);
-		CG_CompassDrawHelicopter(0, compassType, 12, parentRect, rect, Colors::white);
-		CG_CompassDrawGuidedMissle(0, compassType, 4, parentRect, rect, Colors::white);
-		CG_CompassDrawTurrets(0, compassType, 11, parentRect, rect, Colors::white);
-		CG_CompassDrawIncomingArtilleryIcon(0, compassType, parentRect, rect, 
-			Colors::white);
-		CG_CompassDrawArtilleryIcon(0, compassType, parentRect, rect, Colors::white);
-		CG_CompassDrawPlayerPointers_MiniMap(0, compassType, parentRect, rect,
-			0, Colors::white);
-		CG_CompassDrawDogs(0, compassType, 17, parentRect, rect, (Material*)0x2686568,
-			Colors::white);
-		CG_CompassDrawFakeFire(0, compassType, parentRect, rect, Colors::white);
-		CG_CompassDrawRadarEffects(0, compassType, parentRect, rect, Colors::white);
-		CG_CompassDrawPlayer(0, compassType, parentRect, rect,
-			Material_RegisterHandle("compassping_player", 0), Colors::white);
+		if (Variables::customRadar)
+		{
+			CG_CompassDrawVehicles(0, compassType, 14, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawVehicles(0, compassType, 13, parentRect, rect, 
+				Colors::white);
+			CG_CompassDrawHelicopter(0, compassType, 12, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawGuidedMissle(0, compassType, 4, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawTurrets(0, compassType, 11, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawIncomingArtilleryIcon(0, compassType, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawArtilleryIcon(0, compassType, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawPlayerPointers_MiniMap(0, compassType, parentRect, rect,
+				0, Colors::white);
+			CG_CompassDrawDogs(0, compassType, 17, parentRect, rect, 
+				(Material*)0x2686568, Colors::white);
+			CG_CompassDrawFakeFire(0, compassType, parentRect, rect,
+				Colors::white);
+			CG_CompassDrawRadarEffects(0, compassType, parentRect, rect, 
+				Colors::white);
+			CG_CompassDrawPlayer(0, compassType, parentRect, rect,
+				Material_RegisterHandle("compassping_player", 0), Colors::white);
+		}
 	}
 }
