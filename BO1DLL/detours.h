@@ -36,11 +36,11 @@ extern __usercall CL_MouseMove;
 extern bool(__cdecl *UI_KeysBypassMenu)(int localClientNum);
 extern void(__cdecl *CG_DrawNightVisionOverlay)(int localClientNum);
 extern void(__cdecl *Menu_Paint)(int localClientNum, UiContext *dc,
-	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
-	int UI3OverrideID);
+	struct ScreenPlacementStack *scrPlaceViewStack, 
+	struct menuDef_t *menu, int UI3OverrideID);
 extern float(__cdecl *CG_GetScramblerEnemyAlpha)(int localClientNum);
-extern float(__cdecl *CG_FadeCompass)(int localClientNum, int displayStartTime,
-	int compassType);
+extern float(__cdecl *CG_FadeCompass)(int localClientNum,
+	int displayStartTime, int compassType);
 extern float(__cdecl *CG_FadeCompassIcons)(int localClientNum,
 	bool ignoreGlobalScrambler);
 

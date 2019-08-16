@@ -1,15 +1,13 @@
 ﻿  
   
-  Library BO1DLL.dll Loaded 08:07:41
+  Library BO1DLL.dll Loaded 10:35:04
   
   
 cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
   detours.cpp
-  esp.cpp
-  Generating Code...
-  BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\Projects\BO1DLL\Debug\BO1DLL.dll
+  BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 08:07:43
+  Library BO1DLL.dll Loaded 10:35:06
   
   

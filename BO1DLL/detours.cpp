@@ -216,7 +216,7 @@ void CG_DrawNightVisionOverlayDetour(int localClientNum)
 			/ scrPlace->scaleVirtualToFull[1] - 235,
 		150, 150, 0, 0
 	};
-	RenderESP(Variables::fullMap, &parentRect, &rect);
+	RenderESP(Variables::fullMap, Variables::fullMap ? &parentRect : &rect, &rect);
 
 	CG_DrawNightVisionOverlay(localClientNum);
 }
@@ -263,8 +263,8 @@ bool CL_MouseMoveDetour(int localClientNum, usercmd_s *cmd)
 }
 
 void Menu_PaintDetour(int localClientNum, UiContext *dc,
-	struct ScreenPlacementStack *scrPlaceViewStack, struct menuDef_t *menu,
-	int UI3OverrideID)
+	struct ScreenPlacementStack *scrPlaceViewStack,
+	struct menuDef_t *menu, int UI3OverrideID)
 {
 	if (!Variables::customRadar 
 		|| strcmp(*(const char**)menu, "compass_old"))
@@ -272,7 +272,7 @@ void Menu_PaintDetour(int localClientNum, UiContext *dc,
 			scrPlaceViewStack, menu, UI3OverrideID);
 
 	(*(dvar_s**)0xD5864C)->current.value = 0.0f;
-	(*(dvar_s**)0xC9D75C)->current.value = 0.7f;
+	(*(dvar_s**)0xC9D75C)->current.value = 1.0f;
 	cgameGlob->globalScramblerActive = 0;
 }
 

@@ -21,6 +21,7 @@ float pi();
 int AngleToShort(float x);
 float ShortToAngle(int x);
 void Vec3Normalize(float *v);
+
 //void Aimbot::PredictPosition(centity_s *cent, vec3_t pos, int scale, bool z)
 //{
 //	vec3_t enemyVelocityTemp, enemyVelocity;
