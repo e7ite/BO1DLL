@@ -272,7 +272,6 @@ void Menu_PaintDetour(int localClientNum, UiContext *dc,
 			scrPlaceViewStack, menu, UI3OverrideID);
 
 	(*(dvar_s**)0xD5864C)->current.value = 0.0f;
-	(*(dvar_s**)0xC9D75C)->current.value = 1.0f;
 	cgameGlob->globalScramblerActive = 0;
 }
 

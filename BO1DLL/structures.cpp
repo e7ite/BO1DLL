@@ -8,6 +8,8 @@ clientActive_t *GameData::clientActive =	(clientActive_t*)0xE6DB80;
 cgs_t *GameData::cgs				   =		   *(cgs_t**)0xD55044;
 KeyState *GameData::keys			   =		  (KeyState*)0xDB497C;
 HWND *GameData::hWnd				   =			 (HWND*)0x39A9904;
+SndBank **GameData::sndBank			   =		 (SndBank**)0x3E156A4;
+int *GameData::g_sndBankCount		   =			  (int*)0x3E15748;
 Fonts GameData::normalFont			   = { 1,    "fonts/normalFont" };
 Fonts GameData::smallFont 			   = { 3,     "fonts/smallFont" };
 Fonts GameData::consoleFont  		   = { 5,   "fonts/consoleFont" };
@@ -109,7 +111,7 @@ void(__cdecl *CG_DrawRotatedPic)(ScreenPlacement *scrPlace,
 	float x, float y, float width, float height, int horzAlign, int vertAlign,
 	float angle, const float *color, struct Material *material)
 = (void(__cdecl*)(ScreenPlacement*, float, float, float, float, int, int,
-		float, const float*, Material*))CG_DrawRotatedPic_a;
+	float, const float*, Material*))CG_DrawRotatedPic_a;
 void(__cdecl *CL_DrawTextWithEffects)(ScreenPlacement *scrPlace,
 	const char *text, int maxChars, Font_s *font, float x, float y,
 	float rotation, int horzAlign, int vertAlign, float xScale, float yScale,
@@ -220,6 +222,14 @@ void(__cdecl *CG_CompassDrawRadarEffects)(int localClientNum,
 	const float *color)
 = (void(__cdecl*)(int, int, const rectDef_s*, const rectDef_s*,
 	const float*))CG_CompassDrawRadarEffects_a;
+void(__cdecl *CG_PlaySound)(int localClientNum, int entityNum,
+	const float *origin, int fadeMs, bool doNotify, 
+	float attentuation, unsigned int id)
+= (void(__cdecl*)(int, int, 
+	const float*, int, bool, float, unsigned int))CG_PlaySound_a;
+int(__cdecl *SND_FindAlias)(const char *name)
+= (int(__cdecl*)(const char*))SND_FindAlias_a;
+
 
 vec3_t vec3_t::operator+(const vec3_t &vec) const
 {

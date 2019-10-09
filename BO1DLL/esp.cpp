@@ -112,7 +112,9 @@ void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 	float headScreen[2], feetScreen[2];
 	const float *color = Colors::red;
 
-	if (strcmp(cgs->gametype, "dm")
+	if (BG_HasPerk(cent->nextState.clientNum, "perk_scrambler"))
+		color = Colors::black;
+	else if (strcmp(cgs->gametype, "dm")
 		&& cgameGlob->clients[cent->nextState.number].team
 		== cgameGlob->clients[cgameGlob->clientNum].team)
 		if (!Variables::friendlyESP)
@@ -139,6 +141,14 @@ void DrawPlayerESP(centity_s *cent, int compassType, const rectDef_s *parentRect
 	CG_DrawRotatedPicPhysical(scrPlace, rect.x - rect.w / 2,
 		rect.y, rect.w, rect.h, 0, Colors::white,
 		weap->weapDef->hudIcon);
+
+	static int i = 0;
+	if (i++ > 50)
+		CG_PlaySound(0, cent->nextState.number, cent->pose.origin, 0, 1, 1.0f,
+			SND_FindAlias(
+				BG_GetWeaponDef(cgameGlob->weaponSelect)->fireSound
+			)
+		), i = 0;
 
 	if (!Variables::customRadar)
 		return;

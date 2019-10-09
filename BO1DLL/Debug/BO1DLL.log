@@ -1,13 +1,23 @@
 ﻿  
   
-  Library BO1DLL.dll Loaded 10:35:04
+  Library BO1DLL.dll Loaded 07:29:01
   
   
 cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+  aimbot.cpp
   detours.cpp
+  dllmain.cpp
+  esp.cpp
+  menu.cpp
+  structures.cpp
+d:\documents\visual studio 2017\bo1dll\bo1dll\structures.cpp(427): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\documents\visual studio 2017\bo1dll\bo1dll\structures.cpp(428): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\documents\visual studio 2017\bo1dll\bo1dll\structures.cpp(430): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\documents\visual studio 2017\bo1dll\bo1dll\structures.cpp(431): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
   BO1DLL.vcxproj -> D:\Documents\Visual Studio 2017\BO1DLL\Debug\BO1DLL.dll
   
   
-  Library BO1DLL.dll Loaded 10:35:06
+  Library BO1DLL.dll Loaded 07:29:07
   
   

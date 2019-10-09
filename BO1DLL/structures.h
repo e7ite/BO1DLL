@@ -416,7 +416,13 @@ struct WeaponDef
 	int penetrateType;						//0x024
 	int impactType;							//0x028
 	int inventoryType;						//0x02C
-	char pad00[0x2F0];						//0x030
+	char pad00[0x5C];						//0x030
+	const char *projectileSound;			//0x08C
+	const char *pullbackSound;				//0x090
+	const char *pullbackSoundPlayer;		//0x094
+	const char *fireSound;					//0x098
+	const char *fireSoundPlayer;			//0x09C
+	char pad01[0x280];						//0x0A0
 	struct Material *hudIcon;				//0x320
 	int hudIconRatio;						//0x324
 	struct Material *indicatorIcon;			//0x328
@@ -428,28 +434,28 @@ struct WeaponDef
 	int iHeatIndex;							//0x340
 	int iMaxAmmo;							//0x344
 	int shotCount;							//0x348
-	char pad01[0x180];						//0x34C
+	char pad02[0x180];						//0x34C
 	float fHipSpreadDuckedMin;				//0x4CC
 	float fHipSpreadStandMin;				//0x4D0
 	float fHipSpreadProneMin;				//0x4D4
 	float hipSpreadDuckedMax;				//0x4D8
 	float hipSpreadStandMax;				//0x4DC
 	float hipSpreadProneMax;				//0x4E0
-	char pad02[0x68];						//0x4E4
+	char pad03[0x68];						//0x4E4
 	bool sharedAmmo;						//0x54C
 	bool bRifleBullet;						//0x54D
 	bool armorPiercing;						//0x54E
 	bool bBoltAction;						//0x54F
-	char pad03[0x168];						//0x550
+	char pad04[0x168];						//0x550
 	float fAdsViewKickYawMin;				//0x6B8
 	float fAdsViewKickYawMax;				//0x6BC
 	float fAdsViewScatterMin;				//0x6C0
 	float fAdsViewScatterMax;				//0x6C4
 	float fAdsSpread;						//0x6C8
-	char pad04[0x88];						//0x6CC
+	char pad05[0x88];						//0x6CC
 	float aiSpread;							//0x754
 	float playerSpread;						//0x758
-	char pad05[0x44];						//0x75C
+	char pad06[0x44];						//0x75C
 	int minDamage;							//0x7A0
 	int minPlayerDamage;					//0x7A4
 	float fMaxDamageRange;					//0x7A8
@@ -520,6 +526,65 @@ struct KeyState
 	const char *binding2;					//0x0C
 }; //Size = 0x10
 
+struct snd_asset
+{
+	const char *filename;					//0x00
+	unsigned int version;					//0x04
+	unsigned int frame_count;				//0x08
+	unsigned int frame_rate;				//0x0C
+	unsigned int channel_count;				//0x10
+	unsigned int header_count;				//0x14
+	unsigned int buffer_size;				//0x18
+	int format;								//0x1C
+	int channel_flags;						//0x20
+	int unsigned seek_table_count;			//0x24
+	unsigned int *seek_table;				//0x28
+	char pad00[0x4];						//0x2C
+	unsigned int data_size;					//0x30
+	char *data;								//0x34
+};
+
+struct SoundFile
+{
+	snd_asset *ref;							//0x00
+};
+
+struct snd_alias_t
+{
+	const char *name;						//0x00
+	unsigned int id;						//0x04
+	const char *subtitle;					//0x0C
+	const char *secondaryname;				//0x10
+	SoundFile *soundFile;					//0x14
+};
+
+struct snd_alias_list_t
+{
+	const char *name;						//0x00
+	unsigned int id;						//0x04
+	snd_alias_t *head;						//0x08
+	int count;								//0x0C
+	int sequence;							//0x10
+};
+
+struct SndBank
+{
+	const char *name;						//0x00
+	unsigned int aliasCount;				//0x04
+	struct snd_alias_list_t *alias;			//0x08
+	struct SndIndexEntry
+	{
+		unsigned __int16 value;
+		unsigned __int16 next;
+	} *aliasIndex;							//0x0C
+	unsigned int packHash;					//0x10
+	unsigned int packLocation;				//0x14
+	unsigned int radverbCount;				//0x18
+	struct snd_radverb *radverbs;			//0x1C
+	unsigned int snapshotCount;				//0x20
+	struct snd_snapshot *snapshots;			//0x24
+};
+
 enum FuncAddresses : DWORD
 {
 	UI_DrawText_a							= 0x4D65A0,
@@ -571,6 +636,8 @@ enum FuncAddresses : DWORD
 	CG_CompassDrawArtilleryIcon_a			= 0x5C9600,
 	CG_CompassDrawPlayerMap_a				= 0x55FBC0,
 	BG_GetPerkIndexForName_a				= 0x5E6C80,
+	CG_PlaySound_a							= 0x411260,
+	SND_FindAlias_a							= 0x575A60,
 	Sys_Milliseconds_a						= 0x675F60,
 	CG_DrawRotatedPic_a						= 0x68FA00,
 	CL_DrawTextWithEffects_a				= 0x5674D0,
@@ -630,6 +697,8 @@ namespace GameData
 	extern Fonts consoleFont;
 	extern Fonts objectiveFont;
 	extern HWND *hWnd;
+	extern SndBank **sndBank;
+	extern int *g_sndBankCount;
 	extern const unsigned char prevOps[0x17];
 }
 using namespace GameData;
@@ -746,6 +815,10 @@ extern void(__cdecl *CG_CompassDrawFakeFire)(int localClientNum, int compassType
 extern void(__cdecl *CG_CompassDrawRadarEffects)(int localClientNum,
 	int compassType, const rectDef_s *parentRect, const rectDef_s *rect,
 	const float *color);
+extern void(__cdecl *CG_PlaySound)(int localClientNum, int entityNum,
+	const float *origin, int fadeMs, bool doNotify, 
+	float attentuation, unsigned int id);
+extern int(__cdecl *SND_FindAlias)(const char *name);
 
 bool AimTarget_GetTagPos(centity_s *cent, const char *tagname, float *pos);
 bool AimTarget_IsTargetVisible(centity_s *cent, const char *visbone);
